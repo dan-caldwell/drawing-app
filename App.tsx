@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ToolNavbar from './navigation/ToolNavbar';
 import Gestures from './components/drawing/Gestures';
 import DrawingCanvas from './components/drawing/DrawingCanvas';
+import DrawingProvider from './components/context/DrawingContext';
 
 // import useCachedResources from './hooks/useCachedResources';
 // import useColorScheme from './hooks/useColorScheme';
@@ -20,15 +21,17 @@ export default function App() {
 	//} else {
 		return (
 			<>
-			<SafeAreaView style={{ flex:0, backgroundColor: '#fff' }} />
-			<SafeAreaView style={{ flex:1, backgroundColor: '#fff' }}>
-				<View style={styles.canvas}>
-					<Gestures enabled={true}>
-						<DrawingCanvas enabled={false} />
-					</Gestures>
-				</View>
-				<ToolNavbar />
-				<StatusBar />
+			<SafeAreaView style={[styles.safeArea, {flex: 0, borderBottomColor: '#ddd', borderBottomWidth: 1}]} />
+			<SafeAreaView style={[styles.safeArea, {flex: 1}]}>
+				<DrawingProvider>
+					<View style={styles.canvas}>
+						<Gestures>
+							<DrawingCanvas />
+						</Gestures>
+					</View>
+					<ToolNavbar />
+				</DrawingProvider>
+				<StatusBar style="dark" />
 			</SafeAreaView>
 			</>
 		);
@@ -36,12 +39,16 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+	safeArea: {
+		backgroundColor: '#fff'
+	},
 	container: {
         flex: 1,
         backgroundColor: '#fff',
     },
 	canvas: {
 		flex: 1,
-		backgroundColor: '#fff'
+		backgroundColor: '#ddd',
+		overflow: 'hidden',
 	}
 });

@@ -2,21 +2,33 @@ import React, { createContext, useState } from "react";
 
 interface ContextProps {
     drawing: boolean,
-    setDrawing: React.Dispatch<React.SetStateAction<boolean>>
+    setDrawing: React.Dispatch<React.SetStateAction<boolean>>,
+    paths: string[],
+    setPaths: React.Dispatch<React.SetStateAction<string[]>>,
+    activeTool: string,
+    setActiveTool: React.Dispatch<React.SetStateAction<string>>
 }
 
-export const DrawingContext = createContext<Partial<ContextProps>>({});
+export const DrawingContext = createContext<ContextProps>({
+    drawing: true,
+    setDrawing: () => {},
+    paths: [''],
+    setPaths: () => {},
+    activeTool: 'brush',
+    setActiveTool: () => {}
+});
 
-interface Props {
-    children: JSX.Element | React.FC,
-}
 
-const DrawingProvider: React.FC<Props> = ({children}) => {
-    const [drawing, setDrawing] = useState(true);
+const DrawingProvider: React.FC = ({children}) => {
+    const [drawing, setDrawing] = useState(false);
+    const [paths, setPaths] = useState(['']);
+    const [activeTool, setActiveTool] = useState('brush');
     
     return (
         <DrawingContext.Provider value={{
-            drawing, setDrawing
+            drawing, setDrawing,
+            paths, setPaths,
+            activeTool, setActiveTool
         }}>
             {children}
         </DrawingContext.Provider>

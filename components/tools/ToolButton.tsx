@@ -1,10 +1,15 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Text } from "react-native"
 
-const ToolButton: React.FC = () => {
+interface Props {
+    text: string,
+    onPress: () => void
+}
+
+const ToolButton: React.FC<Props> = ({text, onPress}) => {
     return (
-        <TouchableOpacity style={[styles.button]}>
-            <Text>Tool Button</Text>
+        <TouchableOpacity style={[styles.button]} onPress={onPress}>
+            <Text>{text}</Text>
         </TouchableOpacity>
     )
 }
@@ -16,6 +21,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#ddd",
         padding: 10,
         borderRadius: 10,
-        zIndex: 2
+        marginVertical: 10,
+        marginHorizontal: 2.5
     },
 });

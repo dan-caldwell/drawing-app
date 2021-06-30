@@ -1,10 +1,10 @@
-import React, { useRef, useCallback }  from 'react';
+import React, { useRef, useCallback, useContext }  from 'react';
 import { Animated, Dimensions } from 'react-native';
 import { HandlerStateChangeEvent, PanGestureHandler, PanGestureHandlerEventPayload, PinchGestureHandler, PinchGestureHandlerEventPayload, State } from "react-native-gesture-handler";
+import { DrawingContext } from '../context/DrawingContext';
 
 interface Props {
     children: JSX.Element | React.FC,
-    enabled: boolean
 }
 
 interface Offset {
@@ -15,8 +15,8 @@ interface Offset {
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const Gestures: React.FC<Props> = ({ children, enabled }) => {
-
+const Gestures: React.FC<Props> = ({ children }) => {
+    const { drawing } = useContext(DrawingContext);
     const translationXRef = useRef(new Animated.Value(0));
     const translationYRef = useRef(new Animated.Value(0));
     const lastOffset = useRef<Offset>({x: 0, y: 0});
@@ -64,15 +64,15 @@ const Gestures: React.FC<Props> = ({ children, enabled }) => {
 
     const translateInterpolate = (orientationValue: number, ref: React.MutableRefObject<Animated.Value>) => {
         return ref.current.interpolate({
-            inputRange: [-orientationValue, orientationValue],
-            outputRange: [-orientationValue, orientationValue],
+            inputRange: [-orientationValue / 2, orientationValue / 2],
+            outputRange: [-orientationValue / 2, orientationValue / 2],
             extrapolate: 'clamp'
         });
     }
 
 
     return (
-        <PanGestureHandler enabled={enabled} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
+        <PanGestureHandler enabled={!drawing} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
             <Animated.View
                 style={{
                     transform: [
@@ -81,7 +81,7 @@ const Gestures: React.FC<Props> = ({ children, enabled }) => {
                     ]
                 }}
             >
-                <PinchGestureHandler enabled={enabled} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
+                <PinchGestureHandler enabled={!drawing} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
                     <Animated.View
                         style={{
                             transform: [
