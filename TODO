@@ -1,0 +1,1 @@
+[ ] Use onLayout to calculate the left of the button pressed in the main navbar, so it's possible to position the submenu based on the left value (maybe centered, or if it's an end component then it goes to the left/right)
