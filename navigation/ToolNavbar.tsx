@@ -1,15 +1,19 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, GestureResponderEvent } from 'react-native';
 import ToolButton from '../components/tools/ToolButton';
 import { DrawingContext } from '../components/context/DrawingContext';
-import ToolSubmenu from '../components/tools/ToolSubmenu';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const ToolNavbar: React.FC = () => {
     const { activeTool, setActiveTool, setPaths, drawing, setDrawing } = useContext(DrawingContext);
+
+    const handlePressCallback = (e: GestureResponderEvent, measurement: object) => {
+        console.log(measurement);
+    }
+
     return (
         <View style={styles.container}>
-            <ToolSubmenu>
+            <View style={styles.toolSubmenu}>
                 <ToolButton 
                     style={styles.submenuButton} 
                     active={false} 
@@ -22,10 +26,10 @@ const ToolNavbar: React.FC = () => {
                     text="Move"
                     icon={<MaterialCommunityIcons name="cursor-move" size={24} color="black" />}
                 />
-            </ToolSubmenu>
+            </View>
             <ToolButton 
                 active={drawing} 
-                onPress={() => setDrawing(true)}
+                onPress={handlePressCallback}
                 icon={<MaterialCommunityIcons name="cursor-move" size={24} color="black" />}
             />
             <ToolButton 
@@ -63,6 +67,14 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         justifyContent: 'center',
         position: 'relative',
+    },
+    toolSubmenu: {
+        position: 'absolute',
+        bottom: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 10,
+        margin: 10,
+        padding: 10,
     },
     submenuButton: {
         margin: 0,

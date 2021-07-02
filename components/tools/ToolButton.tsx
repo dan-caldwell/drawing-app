@@ -1,24 +1,35 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, Text, View } from "react-native";
+import React, { useRef } from 'react';
+import { TouchableOpacity, StyleSheet, Text, View, LayoutChangeEvent, GestureResponderEvent } from "react-native";
 
 interface Props {
     text?: string,
-    onPress: () => void,
+    onPress: (e: GestureResponderEvent, measurement: object) => void,
     active: boolean,
     children?: JSX.Element | React.FC,
     style?: object[] | object,
-    icon?: JSX.Element | React.FC
+    icon?: JSX.Element | React.FC,
 }
 
 const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon}) => {
+    const buttonRef = useRef<View>(null);
 
-    const getLayout = (e) => {
-        console.log(e.nativeEvent.layout);
+    const measureComponent = (component: View) => {
+        return new Promise<object>((resolve, reject) => {
+            component.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+                resolve({x, y, width, height, pageX, pageY});
+            });
+        });
+    }
+
+    const handlePress = async (e: GestureResponderEvent) => {
+        if (!buttonRef.current) return;
+        const measurement = await measureComponent(buttonRef.current);
+        onPress(e, measurement);
     }
 
     return (
-        <View style={styles.container} onLayout={getLayout}>
-            <TouchableOpacity style={[styles.button, active ? styles.active : null, style || null]} onPress={onPress}>
+        <View style={styles.container} ref={buttonRef}>
+            <TouchableOpacity style={[styles.button, active ? styles.active : null, style || null]} onPress={handlePress}>
                 {icon && icon}
                 {text && <Text style={active ? styles.activeText : null}>{text}</Text>}
             </TouchableOpacity>
@@ -37,7 +48,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         marginVertical: 10,
-        marginHorizontal: 2.5,
+        marginHorizontal: 5,
         flexDirection: "row",
         alignItems: "center"
     },
