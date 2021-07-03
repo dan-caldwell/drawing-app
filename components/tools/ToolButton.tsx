@@ -1,9 +1,11 @@
 import React, { useRef } from 'react';
 import { TouchableOpacity, StyleSheet, Text, View, LayoutChangeEvent, GestureResponderEvent } from "react-native";
+import { Measurement } from '@types';
+import { measureComponent } from 'drawing-app/utils';
 
 interface Props {
     text?: string,
-    onPress: (e: GestureResponderEvent, measurement: object) => void,
+    onPress: (e: GestureResponderEvent, measurement: Measurement) => void,
     active: boolean,
     children?: JSX.Element | React.FC,
     style?: object[] | object,
@@ -12,14 +14,6 @@ interface Props {
 
 const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon}) => {
     const buttonRef = useRef<View>(null);
-
-    const measureComponent = (component: View) => {
-        return new Promise<object>((resolve, reject) => {
-            component.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
-                resolve({x, y, width, height, pageX, pageY});
-            });
-        });
-    }
 
     const handlePress = async (e: GestureResponderEvent) => {
         if (!buttonRef.current) return;

@@ -20,3 +20,12 @@ export type TabOneParamList = {
 export type TabTwoParamList = {
   TabTwoScreen: undefined;
 };
+
+export type Measurement = {
+  height: number,
+  width: number,
+  pageX: number,
+  pageY: number,
+  x: number,
+  y: number
+}

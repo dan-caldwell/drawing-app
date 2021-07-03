@@ -1,1 +1,4 @@
-[ ] Use onLayout to calculate the left of the button pressed in the main navbar, so it's possible to position the submenu based on the left value (maybe centered, or if it's an end component then it goes to the left/right)
+[√] Use onLayout to calculate the left of the button pressed in the main navbar, so it's possible to position the submenu based on the left value (maybe centered, or if it's an end component then it goes to the left/right)
+[ ] Caret at the bottom of the submenu
+[ ] Make submenu dynamic (changes children based on the button pressed)
+[ ] Click on navbar in white space should hide the open submenu

@@ -1,7 +1,12 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "react",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "drawing-app/*": ["./*"],
+      "@types": ["types.tsx"]
+    }
   }
 }

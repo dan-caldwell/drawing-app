@@ -12,12 +12,18 @@ interface StartPoints {
 }
 
 const DrawingCanvas: React.FC = () => {
-    const { drawing, paths, setPaths, activeTool } = useContext(DrawingContext);
+    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu } = useContext(DrawingContext);
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
 
     const handleResponderGrant = (e: GestureResponderEvent) => {
+        if (openSubmenu.open) setOpenSubmenu({
+            open: false,
+            left: 0,
+            bottom: 0,
+            target: null
+        });
         moveRef.current = false;
         if (!drawing) return;
         const x = e.nativeEvent.locationX;
