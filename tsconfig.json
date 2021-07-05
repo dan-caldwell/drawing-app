@@ -6,7 +6,7 @@
     "strict": true,
     "paths": {
       "drawing-app/*": ["./*"],
-      "@types": ["types.tsx"]
+      "@types": ["types.tsx"],
     }
   }
 }

@@ -12,7 +12,7 @@ interface StartPoints {
 }
 
 const DrawingCanvas: React.FC = () => {
-    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu } = useContext(DrawingContext);
+    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, setDrawing } = useContext(DrawingContext);
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
@@ -51,7 +51,7 @@ const DrawingCanvas: React.FC = () => {
                 newPaths = brushResponderMove({ e, paths, x, y });
                 setPaths(newPaths);
                 break;
-            case 'line':
+            case 'vector-line':
                 newPaths = lineResponderMove({ e, paths, x, y, startX: startRef.current.x, startY: startRef.current.y });
                 setPaths(newPaths);
                 break;

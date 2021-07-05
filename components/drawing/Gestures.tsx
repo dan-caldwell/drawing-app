@@ -1,7 +1,8 @@
 import React, { useRef, useCallback, useContext }  from 'react';
-import { Animated, Dimensions } from 'react-native';
+import { Animated } from 'react-native';
 import { HandlerStateChangeEvent, PanGestureHandler, PanGestureHandlerEventPayload, PinchGestureHandler, PinchGestureHandlerEventPayload, State } from "react-native-gesture-handler";
 import { DrawingContext } from '../context/DrawingContext';
+import { windowHeight, windowWidth } from 'drawing-app/constants/Layout';
 
 interface Props {
     children: JSX.Element | React.FC,
@@ -11,9 +12,6 @@ interface Offset {
     x: number,
     y: number
 }
-
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const Gestures: React.FC<Props> = ({ children }) => {
     const { drawing } = useContext(DrawingContext);

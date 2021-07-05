@@ -1,12 +1,16 @@
 import { Dimensions } from 'react-native';
 
-const width = Dimensions.get('window').width;
-const height = Dimensions.get('window').height;
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+export const ICON_MARGIN: number = 10;
+
+export { windowHeight, windowWidth }
 
 export default {
   window: {
-    width,
-    height,
+    width: windowHeight,
+    height: windowHeight,
   },
-  isSmallDevice: width < 375,
+  isSmallDevice: windowWidth < 375,
 };
