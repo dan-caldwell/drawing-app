@@ -18,12 +18,30 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
     }
 
     const handleNavButtonPress = async (e: GestureResponderEvent, measurement: Measurement, target: string) => {
+        // TO DO:
+        // First render submenuRef by setting the display to flex and the opacity to 0,
+        // Then get the measurement of the component
+
+
         if (!submenuRef.current) return;
         if (openSubmenu.open && openSubmenu.target === target) {
             resetOpenSubmenu();
             return;
         }
         const submenuMeasurement = await measureComponent(submenuRef.current);
+
+        // Handle 0 values for width and height
+        if (submenuMeasurement.width === 0 || submenuMeasurement.height === 0) {
+
+            setOpenSubmenu({
+                left: 0,
+                bottom: measurement.y + measurement.height,
+                open: true,
+                target
+            });
+            return;
+        }
+
         const submenuWidth = submenuMeasurement.width / 2;
         let leftValue = measurement.x + (measurement.width / 2) - submenuWidth;
         if (leftValue < 0) leftValue = ICON_MARGIN;

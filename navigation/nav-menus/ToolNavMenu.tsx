@@ -4,11 +4,31 @@ import { View } from 'react-native';
 import TooltipSubmenu from '../TooltipSubmenu';
 import useNavMenu from "drawing-app/hooks/useNavMenu";
 
+type Tool = {
+    tool: string,
+    text: string
+}
+
+const tools: Tool[] = [
+    {
+        tool: "brush",
+        text: "Brush"
+    },
+    {
+        tool: "vector-line",
+        text: "Line"
+    },
+    {
+        tool: "format-color-fill",
+        text: "Fill"
+    }
+]
+
+const acceptableTargets = tools.map(item => item.tool);
+
 const ToolNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
     const { handleNavButtonPress, styles, openSubmenu, activeTool, setActiveTool, handleSubmenuButtonPress, drawing, setDrawing } = useNavMenu(submenuRef);
-
-    const acceptableTargets: (string | null)[] = ["brush", "vector-line"];
 
     const handlePress = (tool: string) => {
         if (!drawing) setDrawing(true);
@@ -17,22 +37,19 @@ const ToolNavMenu: React.FC = () => {
 
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(openSubmenu.target)}>
-                <ToolButton 
-                    text="Brush"
-                    onPress={() => handlePress("brush")}
-                    icon="brush"
-                    style={styles.submenuButton}
-                />
-                <ToolButton 
-                    text="Line"
-                    onPress={() => handlePress("vector-line")}
-                    style={styles.lastSubmenuButton}
-                    icon="vector-line"
-                />
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(activeTool)}>
+                {tools.map((item, index) => (
+                    <ToolButton
+                        text={item.text}
+                        onPress={() => handlePress(item.tool)}
+                        icon={item.tool}
+                        style={index === tools.length - 1 ? styles.lastSubmenuButton : styles.submenuButton}
+                        key={item.tool}
+                    />
+                ))}
             </TooltipSubmenu>
             <ToolButton 
-                active={false} 
+                active={false}
                 onPress={handleNavButtonPress}
                 icon={activeTool}
             />

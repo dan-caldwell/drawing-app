@@ -1,6 +1,9 @@
 [√] Use onLayout to calculate the left of the button pressed in the main navbar, so it's possible to position the submenu based on the left value (maybe centered, or if it's an end component then it goes to the left/right)
+[√] Re-do tool navbar with separate components for button with submenu and submenu button
+[√] Auto join for line tool end point
 [ ] Caret at the bottom of the submenu
 [ ] Make submenu dynamic (changes children based on the button pressed)
 [ ] Click on navbar in white space should hide the open submenu
 [ ] Make icon prop in ToolButton not accept an entire component, just the name
-[ ] Re-do tool navbar with separate components for button with submenu and submenu button
+[ ] Auto join for brush tool end point
+[ ] Fix misaligned submenu on first press (handle in useNavMenu)

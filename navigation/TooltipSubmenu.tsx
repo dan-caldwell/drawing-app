@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { RefObject } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { ICON_MARGIN } from 'drawing-app/constants/Layout';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
@@ -13,9 +13,31 @@ interface Props {
 const TooltipSubmenu = React.forwardRef<View, Props>((props, ref) => {
     const { openSubmenu } = useContext(DrawingContext);
     const { children, open } = props;
+    const [rendered, setRendered] = useState<boolean>(false);
+
+    // display: open ? 'flex' : 'none',
+    
+    const handleLayout = (e: LayoutChangeEvent) => {
+        if (!rendered) {
+            console.log(e.nativeEvent.layout, 'NOT RENDERED');
+            setRendered(true);
+        }
+    }
 
     return (
-        <View ref={ref} style={[styles.container, { display: open ? 'flex' : 'none', left: openSubmenu.left, bottom: openSubmenu.bottom}]}>
+        <View 
+            onLayout={handleLayout}
+            ref={ref} 
+            style={[
+                styles.container, 
+                { 
+                    display: rendered && !open ? "none" : "flex",
+                    opacity: open ? 1 : 0,
+                    left: openSubmenu.left, 
+                    bottom: openSubmenu.bottom,
+                }
+            ]}
+        >
             {children}
         </View>
     )
