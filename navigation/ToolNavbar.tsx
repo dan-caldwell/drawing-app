@@ -1,28 +1,35 @@
 import React, { useContext} from 'react';
-import { View, StyleSheet, GestureResponderEvent, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback, GestureResponderEvent } from 'react-native';
 import ToolButton from '../components/tools/ToolButton';
 import { DrawingContext } from '../components/context/DrawingContext';
-import ActionNavMenu from './nav-menus/ActionNavMenu';
 import ToolNavMenu from './nav-menus/ToolNavMenu';
 
 const ICON_MARGIN: number = 10;
 
 const ToolNavbar: React.FC = () => {
-    const { setPaths, drawing, setDrawing } = useContext(DrawingContext);
+    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu } = useContext(DrawingContext);
+
+    const handlePress = (e: GestureResponderEvent) => {
+        if (openSubmenu.open) {
+            resetOpenSubmenu();
+        }
+    }
 
     return (
-        <View style={styles.container}>
-            <ToolButton
-                onPress={() => setDrawing(!drawing)}
-                icon={drawing ? "pencil" : "cursor-move"}
-            />
-            <ToolNavMenu />
-            <ToolButton 
-                active={false} 
-                onPress={() => setPaths([])} 
-                icon="backup-restore"
-            />
-        </View>
+        <TouchableWithoutFeedback onPress={handlePress}>
+            <View style={styles.container}>
+                <ToolButton
+                    onPress={() => setDrawing(!drawing)}
+                    icon={drawing ? "pencil" : "cursor-move"}
+                />
+                <ToolNavMenu />
+                <ToolButton 
+                    active={false} 
+                    onPress={() => setPaths([])} 
+                    icon="backup-restore"
+                />
+            </View>
+        </TouchableWithoutFeedback>
     )
 }
 

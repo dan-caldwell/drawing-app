@@ -8,7 +8,8 @@ interface ContextProps {
     activeTool: string,
     setActiveTool: React.Dispatch<React.SetStateAction<string>>
     openSubmenu: OpenSubmenu,
-    setOpenSubmenu: React.Dispatch<React.SetStateAction<OpenSubmenu>>
+    setOpenSubmenu: React.Dispatch<React.SetStateAction<OpenSubmenu>>,
+    resetOpenSubmenu: () => void
 }
 
 export const DrawingContext = createContext<ContextProps>({
@@ -22,16 +23,19 @@ export const DrawingContext = createContext<ContextProps>({
         open: false,
         left: 0,
         bottom: 0,
-        target: null
+        target: null,
+        reRendering: false
     },
-    setOpenSubmenu: () => {}
+    setOpenSubmenu: () => {},
+    resetOpenSubmenu: () => {}
 });
 
 interface OpenSubmenu {
     open: boolean,
     left: number,
     bottom: number,
-    target: string | null
+    target: string | null,
+    reRendering: boolean
 }
 
 
@@ -43,15 +47,27 @@ const DrawingProvider: React.FC = ({children}) => {
         open: false,
         left: 0,
         bottom: 0,
-        target: null
+        target: null,
+        reRendering: false
     });
+
+    const resetOpenSubmenu = () => {
+        setOpenSubmenu({
+            bottom: 0,
+            left: 0,
+            open: false,
+            target: null,
+            reRendering: false
+        });
+    }
     
     return (
         <DrawingContext.Provider value={{
             drawing, setDrawing,
             paths, setPaths,
             activeTool, setActiveTool,
-            openSubmenu, setOpenSubmenu
+            openSubmenu, setOpenSubmenu,
+            resetOpenSubmenu
         }}>
             {children}
         </DrawingContext.Provider>

@@ -6,22 +6,9 @@ import { ICON_MARGIN, windowWidth } from 'drawing-app/constants/Layout';
 import { measureComponent } from 'drawing-app/utils';
 
 const useNavMenu = (submenuRef: React.RefObject<View>) => {
-    const { openSubmenu, setOpenSubmenu, drawing, setDrawing, activeTool, setActiveTool } = useContext(DrawingContext);
-
-    const resetOpenSubmenu = () => {
-        setOpenSubmenu({
-            bottom: 0,
-            left: 0,
-            open: false,
-            target: null
-        });
-    }
+    const { openSubmenu, setOpenSubmenu, drawing, setDrawing, activeTool, setActiveTool, resetOpenSubmenu } = useContext(DrawingContext);
 
     const handleNavButtonPress = async (e: GestureResponderEvent, measurement: Measurement, target: string) => {
-        // TO DO:
-        // First render submenuRef by setting the display to flex and the opacity to 0,
-        // Then get the measurement of the component
-
 
         if (!submenuRef.current) return;
         if (openSubmenu.open && openSubmenu.target === target) {
@@ -31,14 +18,17 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
         const submenuMeasurement = await measureComponent(submenuRef.current);
 
         // Handle 0 values for width and height
-        if (submenuMeasurement.width === 0 || submenuMeasurement.height === 0) {
-
+        // This will only run once as it requires openSubmenu.reRendering to be set to false
+        if ((submenuMeasurement.width === 0 || submenuMeasurement.height === 0) && !openSubmenu.reRendering) {
             setOpenSubmenu({
                 left: 0,
                 bottom: measurement.y + measurement.height,
                 open: true,
-                target
+                target,
+                reRendering: true
             });
+            // Call this function again with the updated state
+            handleNavButtonPress(e, measurement, target);
             return;
         }
 
@@ -50,7 +40,8 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
             left: leftValue,
             bottom: measurement.y + measurement.height,
             open: true,
-            target
+            target,
+            reRendering: false
         });
     }
 

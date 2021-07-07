@@ -13,6 +13,7 @@ export const brushResponderMove = (args: Move) => {
     const newPaths = clone(paths);
     const currentPath = newPaths[newPaths.length - 1];
     const separatePoints = currentPath.split('L');
+
     const sliceAt = separatePoints.length < 6 ? 0 : separatePoints.length - 5;
     const lastNPoints = separatePoints.slice(sliceAt).map((item: string) => {
         const splitPoints = item.trim().replace('M', '').split(' ');
@@ -35,6 +36,19 @@ export const brushResponderMove = (args: Move) => {
     if (isNaN(xValue)) xValue = x;
     if (isNaN(yValue)) yValue = y;
 
-    newPaths[newPaths.length - 1] = currentPath + ` L${xValue} ${yValue}`;
+    // Get the first point for auto-complete
+    let newX: number = xValue;
+    let newY: number = yValue;
+    const firstPoint = separatePoints[0].trim().replace('M', '').split(' ');
+    if (firstPoint.length === 2 && separatePoints.length > 7) {
+        const firstX = Number(firstPoint[0]);
+        const firstY = Number(firstPoint[1]);
+        if (Math.abs(xValue - firstX) < 7 && Math.abs(yValue - firstY) < 7) {
+            newX = firstX;
+            newY = firstY;
+        }
+    }
+
+    newPaths[newPaths.length - 1] = currentPath + ` L${newX} ${newY}`;
     return newPaths;
 }
