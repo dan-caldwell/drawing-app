@@ -29,3 +29,16 @@ export type Measurement = {
   x: number,
   y: number
 }
+
+export type OpenSubmenu = {
+  open: boolean,
+  left: number,
+  bottom: number,
+  target: string | null,
+  reRendering: boolean
+}
+
+export type AutoJoin = {
+  disabled: boolean,
+  distance: number
+}

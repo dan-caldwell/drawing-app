@@ -2,9 +2,9 @@ import React, { useRef, useState, useContext } from 'react';
 import { GestureResponderEvent, View, StyleSheet, Animated } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
-import { brushResponderMove } from './tool-utils/brush-tool';
-import { lineResponderMove } from './tool-utils/line-tool';
 import clone from 'clone';
+import useBrushTool from 'drawing-app/hooks/useBrushTool';
+import useLineTool from 'drawing-app/hooks/useLineTool';
 
 interface StartPoints {
     x: number | null,
@@ -13,6 +13,8 @@ interface StartPoints {
 
 const DrawingCanvas: React.FC = () => {
     const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, setDrawing } = useContext(DrawingContext);
+    const { brushResponderMove } = useBrushTool();
+    const { lineResponderMove, determineIfLineContinuation } = useLineTool();
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
@@ -23,7 +25,8 @@ const DrawingCanvas: React.FC = () => {
             open: false,
             left: 0,
             bottom: 0,
-            target: null
+            target: null,
+            reRendering: false
         });
         moveRef.current = false;
         lineContinuationRef.current = 0;
@@ -31,20 +34,11 @@ const DrawingCanvas: React.FC = () => {
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
         startRef.current = {x, y};
+
+
         if (activeTool === "vector-line") {
-            const lastPath = paths[paths.length - 1];
-            if (lastPath && !lineContinuationRef.current) {
-                const lastPathSplit = lastPath.trim().replace(/M/g, '').replace(/L/g, '').split(' ');
-                const lastX = lastPathSplit[lastPathSplit.length - 2];
-                const lastY = lastPathSplit[lastPathSplit.length - 1];
-                
-                const xDiff = Math.abs(Number(lastX) - x);
-                const yDiff = Math.abs(Number(lastY) - y);
-                if (xDiff < 20 && yDiff < 20) {
-                    lineContinuationRef.current = 1;
-                    return;
-                }
-            }
+            lineContinuationRef.current = determineIfLineContinuation(paths, x, y, lineContinuationRef);
+            if (lineContinuationRef.current === 1) return;
         }
 
         const start = ` M${x} ${y}`;

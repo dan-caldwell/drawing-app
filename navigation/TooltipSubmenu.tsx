@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: '100%',
         marginBottom: ICON_MARGIN,
-        alignItems: 'center'
+        alignItems: 'center',
     },
     children: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',

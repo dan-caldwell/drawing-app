@@ -1,4 +1,5 @@
 import React, { createContext, useState } from "react";
+import { AutoJoin, OpenSubmenu } from '@types';
 
 interface ContextProps {
     drawing: boolean,
@@ -9,35 +10,12 @@ interface ContextProps {
     setActiveTool: React.Dispatch<React.SetStateAction<string>>
     openSubmenu: OpenSubmenu,
     setOpenSubmenu: React.Dispatch<React.SetStateAction<OpenSubmenu>>,
-    resetOpenSubmenu: () => void
+    resetOpenSubmenu: () => void,
+    autoJoin: AutoJoin,
+    setAutoJoin: React.Dispatch<React.SetStateAction<AutoJoin>>
 }
 
-export const DrawingContext = createContext<ContextProps>({
-    drawing: true,
-    setDrawing: () => {},
-    paths: [''],
-    setPaths: () => {},
-    activeTool: 'brush',
-    setActiveTool: () => {},
-    openSubmenu: {
-        open: false,
-        left: 0,
-        bottom: 0,
-        target: null,
-        reRendering: false
-    },
-    setOpenSubmenu: () => {},
-    resetOpenSubmenu: () => {}
-});
-
-interface OpenSubmenu {
-    open: boolean,
-    left: number,
-    bottom: number,
-    target: string | null,
-    reRendering: boolean
-}
-
+export const DrawingContext = createContext<ContextProps>({} as ContextProps);
 
 const DrawingProvider: React.FC = ({children}) => {
     const [drawing, setDrawing] = useState(false);
@@ -49,6 +27,10 @@ const DrawingProvider: React.FC = ({children}) => {
         bottom: 0,
         target: null,
         reRendering: false
+    });
+    const [autoJoin, setAutoJoin] = useState({
+        disabled: false,
+        distance: 5
     });
 
     const resetOpenSubmenu = () => {
@@ -67,7 +49,8 @@ const DrawingProvider: React.FC = ({children}) => {
             paths, setPaths,
             activeTool, setActiveTool,
             openSubmenu, setOpenSubmenu,
-            resetOpenSubmenu
+            resetOpenSubmenu,
+            autoJoin, setAutoJoin
         }}>
             {children}
         </DrawingContext.Provider>

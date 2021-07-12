@@ -7,4 +7,6 @@
 [√] Make icon prop in ToolButton not accept an entire component, just the name
 [√] Click on navbar in white space should hide the open submenu
 [√] Auto join for brush tool end point
+[√] brush-utils and line-utils should be hooks so they can use context
 [ ] Options for auto join distance and to disable it
+[ ] Eraser mode and the ability to select shapes

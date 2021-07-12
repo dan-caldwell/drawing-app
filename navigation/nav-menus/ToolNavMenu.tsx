@@ -37,7 +37,7 @@ const ToolNavMenu: React.FC = () => {
 
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(activeTool)}>
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(openSubmenu.target || '')}>
                 {tools.map((item, index) => (
                     <ToolButton
                         text={item.text}

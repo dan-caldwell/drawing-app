@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableWithoutFeedback, GestureResponderEvent } fro
 import ToolButton from '../components/tools/ToolButton';
 import { DrawingContext } from '../components/context/DrawingContext';
 import ToolNavMenu from './nav-menus/ToolNavMenu';
+import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 
 const ICON_MARGIN: number = 10;
 
@@ -28,6 +29,7 @@ const ToolNavbar: React.FC = () => {
                     onPress={() => setPaths([])} 
                     icon="backup-restore"
                 />
+                <DrawingSettingsNavMenu />
             </View>
         </TouchableWithoutFeedback>
     )
