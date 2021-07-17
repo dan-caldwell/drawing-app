@@ -2,10 +2,11 @@ import { useContext } from 'react';
 import { GestureResponderEvent } from "react-native";
 import clone from 'clone';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
+import { SvgPath } from '@types';
 
 interface Move {
     e: GestureResponderEvent,
-    paths: string[],
+    paths: SvgPath[],
     x: number,
     y: number
 }
@@ -17,7 +18,7 @@ const useBrushTool = () => {
         const { e, paths, x, y } = args; 
         const newPaths = clone(paths);
         const currentPath = newPaths[newPaths.length - 1];
-        const separatePoints = currentPath.split('L');
+        const separatePoints = currentPath.d.split('L');
     
         const sliceAt = separatePoints.length < 6 ? 0 : separatePoints.length - 5;
         const lastNPoints = separatePoints.slice(sliceAt).map((item: string) => {
@@ -57,7 +58,7 @@ const useBrushTool = () => {
             }
         }
     
-        newPaths[newPaths.length - 1] = currentPath + ` L${newX} ${newY}`;
+        newPaths[newPaths.length - 1].d = currentPath.d + ` L${newX} ${newY}`;
         return newPaths;
     }
 

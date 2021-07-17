@@ -2,10 +2,11 @@ import { useContext } from 'react';
 import { GestureResponderEvent } from "react-native";
 import clone from 'clone';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
+import { SvgPath } from '@types';
 
 interface Move {
     e: GestureResponderEvent,
-    paths: string[],
+    paths: SvgPath[],
     x: number,
     y: number,
     startX: number | null,
@@ -20,12 +21,12 @@ const useLineTool = () => {
         const { paths, x, y, startX, startY, lineContinuation } = args; 
         const newPaths = clone(paths);
         if (lineContinuation === 1) {
-            newPaths[newPaths.length - 1] = newPaths[newPaths.length - 1] + ` L${x} ${y}`;
+            newPaths[newPaths.length - 1].d = newPaths[newPaths.length - 1].d + ` L${x} ${y}`;
             return newPaths;
         } else if (lineContinuation === 2) {
             const lastPath = newPaths[newPaths.length - 1];
             if (lastPath) {
-                const lastPathSplit = lastPath.trim().split(' ');
+                const lastPathSplit = lastPath.d.trim().split(' ');
     
                 // Determine if the shape should be closed
                 // Connect the lines if the moving line is close enough to the first line
@@ -43,22 +44,22 @@ const useLineTool = () => {
                     lastPathSplit[lastPathSplit.length - 1] = String(y);
                 }
     
-                newPaths[newPaths.length - 1] = lastPathSplit.join(' ');
+                newPaths[newPaths.length - 1].d = lastPathSplit.join(' ');
             }
             return newPaths;
             //console.log(lastPath);
         }
     
         // If the mode is single line
-        newPaths[newPaths.length - 1] = ` M${startX} ${startY} L${x} ${y}`;
+        newPaths[newPaths.length - 1].d = ` M${startX} ${startY} L${x} ${y}`;
         //console.log(newPaths); 
         return newPaths;
     }
 
-    const determineIfLineContinuation = (paths: string[], x: number, y: number, ref: React.MutableRefObject<number>) => {
+    const determineIfLineContinuation = (paths: SvgPath[], x: number, y: number, ref: React.MutableRefObject<number>) => {
         const lastPath = paths[paths.length - 1];
         if (lastPath && !ref.current) {
-            const lastPathSplit = lastPath.trim().replace(/M/g, '').replace(/L/g, '').split(' ');
+            const lastPathSplit = lastPath.d.trim().replace(/M/g, '').replace(/L/g, '').split(' ');
             const lastX = lastPathSplit[lastPathSplit.length - 2];
             const lastY = lastPathSplit[lastPathSplit.length - 1];
             

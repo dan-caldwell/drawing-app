@@ -5,6 +5,7 @@ import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
+import { SvgPath } from 'drawing-app/types';
 
 interface StartPoints {
     x: number | null,
@@ -12,7 +13,7 @@ interface StartPoints {
 }
 
 const DrawingCanvas: React.FC = () => {
-    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, setDrawing } = useContext(DrawingContext);
+    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, strokeWidth, fill } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
 
@@ -41,10 +42,14 @@ const DrawingCanvas: React.FC = () => {
             if (lineContinuationRef.current === 1) return;
         }
 
-        const start = ` M${x} ${y}`;
+        const pathData: SvgPath = {
+            d: ` M${x} ${y}`,
+            strokeWidth,
+            fill
+        };
         setPaths(oldPaths => {
             const newPaths = clone(oldPaths);
-            newPaths.push(start);
+            newPaths.push(pathData);
             return newPaths;
         });
     }
@@ -57,7 +62,7 @@ const DrawingCanvas: React.FC = () => {
         // For checking if there should be a dot created (or to prevent artifacts at the end of a line)
         moveRef.current = true;
 
-        let newPaths: string[] = [];
+        let newPaths: SvgPath[] = [];
         switch (activeTool) {
             case 'brush':
                 newPaths = brushResponderMove({ e, paths, x, y });
@@ -90,7 +95,7 @@ const DrawingCanvas: React.FC = () => {
             setPaths(oldPaths => {
                 const newPaths = clone(oldPaths);
                 const currentPath = newPaths[newPaths.length - 1];
-                newPaths[newPaths.length - 1] = currentPath + `L${x} ${y}`;
+                newPaths[newPaths.length - 1].d = currentPath.d + `L${x} ${y}`;
                 return newPaths;
             });
         }
@@ -106,7 +111,7 @@ const DrawingCanvas: React.FC = () => {
         >
             <Svg style={styles.svg}>
                 {paths.map(path => (
-                    <Path key={path} stroke="black" fill="red" strokeWidth="10" d={path} strokeLinecap="round" strokeLinejoin="round"></Path>
+                    <Path key={path.d} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
                 ))}
             </Svg>
         </Animated.View>

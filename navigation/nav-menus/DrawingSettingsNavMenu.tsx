@@ -9,8 +9,8 @@ import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
 const DrawingSettingsNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { autoJoin, setAutoJoin } = useContext(DrawingContext);
-    const { handleNavButtonPress, styles, openSubmenu, activeTool } = useNavMenu(submenuRef);
+    const { autoJoin, setAutoJoin, strokeWidth, setStrokeWidth } = useContext(DrawingContext);
+    const { handleNavButtonPress, styles, openSubmenu } = useNavMenu(submenuRef);
 
     const handleSubmenuPress = () => {
         console.log('submenu press')
@@ -21,6 +21,10 @@ const DrawingSettingsNavMenu: React.FC = () => {
             disabled: false,
             distance: value
         });
+    }
+
+    const handleBrushStrokeSizeSlider = (value: number) => {
+        setStrokeWidth(value);
     }
 
     return (
@@ -40,7 +44,16 @@ const DrawingSettingsNavMenu: React.FC = () => {
                     step={1}
                     value={autoJoin.distance}
                 />
-                <Text style={localStyles.autoJoinValue}>Distance: {autoJoin.distance}</Text>
+                <Text style={localStyles.label}>Auto-join Distance: {autoJoin.distance}</Text>
+                <Slider
+                    style={styles.slider}
+                    minimumValue={1}
+                    maximumValue={20}
+                    onValueChange={handleBrushStrokeSizeSlider}
+                    step={1}
+                    value={strokeWidth}
+                />
+                <Text style={localStyles.label}>Stroke Width: {strokeWidth}</Text>
             </TooltipSubmenu>
             <ToolButton 
                 active={false}
@@ -54,7 +67,7 @@ const DrawingSettingsNavMenu: React.FC = () => {
 export default DrawingSettingsNavMenu;
 
 const localStyles = StyleSheet.create({
-    autoJoinValue: {
+    label: {
         color: '#fff'
     }
 });

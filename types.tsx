@@ -42,3 +42,9 @@ export type AutoJoin = {
   disabled: boolean,
   distance: number
 }
+
+export type SvgPath = {
+  d: string,
+  strokeWidth: number,
+  fill: string
+}

@@ -1,25 +1,33 @@
 import React, { createContext, useState } from "react";
-import { AutoJoin, OpenSubmenu } from '@types';
+import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
 
 interface ContextProps {
     drawing: boolean,
     setDrawing: React.Dispatch<React.SetStateAction<boolean>>,
-    paths: string[],
-    setPaths: React.Dispatch<React.SetStateAction<string[]>>,
+    paths: SvgPath[],
+    setPaths: React.Dispatch<React.SetStateAction<SvgPath[]>>,
     activeTool: string,
     setActiveTool: React.Dispatch<React.SetStateAction<string>>
     openSubmenu: OpenSubmenu,
     setOpenSubmenu: React.Dispatch<React.SetStateAction<OpenSubmenu>>,
     resetOpenSubmenu: () => void,
     autoJoin: AutoJoin,
-    setAutoJoin: React.Dispatch<React.SetStateAction<AutoJoin>>
+    setAutoJoin: React.Dispatch<React.SetStateAction<AutoJoin>>,
+    strokeWidth: number,
+    setStrokeWidth: React.Dispatch<React.SetStateAction<number>>,
+    fill: string,
+    setFill: React.Dispatch<React.SetStateAction<string>>
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
 
 const DrawingProvider: React.FC = ({children}) => {
     const [drawing, setDrawing] = useState(false);
-    const [paths, setPaths] = useState(['']);
+    const [paths, setPaths] = useState([{
+        d: '',
+        strokeWidth: 5,
+        fill: ''
+    }]);
     const [activeTool, setActiveTool] = useState('brush');
     const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>({
         open: false,
@@ -32,6 +40,8 @@ const DrawingProvider: React.FC = ({children}) => {
         disabled: false,
         distance: 5
     });
+    const [strokeWidth, setStrokeWidth] = useState(10);
+    const [fill, setFill] = useState('');
 
     const resetOpenSubmenu = () => {
         setOpenSubmenu({
@@ -50,7 +60,9 @@ const DrawingProvider: React.FC = ({children}) => {
             activeTool, setActiveTool,
             openSubmenu, setOpenSubmenu,
             resetOpenSubmenu,
-            autoJoin, setAutoJoin
+            autoJoin, setAutoJoin,
+            strokeWidth, setStrokeWidth,
+            fill, setFill
         }}>
             {children}
         </DrawingContext.Provider>
