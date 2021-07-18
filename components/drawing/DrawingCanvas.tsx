@@ -6,6 +6,8 @@ import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
 import { SvgPath } from 'drawing-app/types';
+import 'react-native-get-random-values';
+import { v4 as uuid } from 'uuid';
 
 interface StartPoints {
     x: number | null,
@@ -22,6 +24,8 @@ const DrawingCanvas: React.FC = () => {
     const lineContinuationRef = useRef(0);
 
     const handleResponderGrant = (e: GestureResponderEvent) => {
+        if (activeTool === "cursor-default") return;
+
         if (openSubmenu.open) setOpenSubmenu({
             open: false,
             left: 0,
@@ -45,7 +49,8 @@ const DrawingCanvas: React.FC = () => {
         const pathData: SvgPath = {
             d: ` M${x} ${y}`,
             strokeWidth,
-            fill
+            fill,
+            id: uuid()
         };
         setPaths(oldPaths => {
             const newPaths = clone(oldPaths);
@@ -55,7 +60,7 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderMove = (e: GestureResponderEvent) => {
-        if (!drawing) return;
+        if (!drawing || activeTool === "cursor-default") return;
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
 
@@ -87,9 +92,11 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderRelease = (e: GestureResponderEvent) => {
-        if (!drawing) return;
+        if (!drawing || activeTool === "cursor-default") return;
+
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
+
 
         if (!moveRef.current) {
             setPaths(oldPaths => {
@@ -99,6 +106,10 @@ const DrawingCanvas: React.FC = () => {
                 return newPaths;
             });
         }
+    }
+
+    const handleSelectPath = (e: GestureResponderEvent, id: string) => {
+        console.log(id);
     }
 
     return (
@@ -111,7 +122,7 @@ const DrawingCanvas: React.FC = () => {
         >
             <Svg style={styles.svg}>
                 {paths.map(path => (
-                    <Path key={path.d} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
+                    <Path onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path.id) : undefined} key={path.id} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
                 ))}
             </Svg>
         </Animated.View>

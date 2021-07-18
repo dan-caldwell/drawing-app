@@ -1,5 +1,7 @@
 import React, { createContext, useState } from "react";
 import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
+import 'react-native-get-random-values';
+import { v4 as uuid } from 'uuid';
 
 interface ContextProps {
     drawing: boolean,
@@ -26,7 +28,8 @@ const DrawingProvider: React.FC = ({children}) => {
     const [paths, setPaths] = useState([{
         d: '',
         strokeWidth: 5,
-        fill: ''
+        fill: '',
+        id: uuid()
     }]);
     const [activeTool, setActiveTool] = useState('brush');
     const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>({

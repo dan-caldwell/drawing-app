@@ -8,7 +8,7 @@ import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 const ICON_MARGIN: number = 10;
 
 const ToolNavbar: React.FC = () => {
-    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu } = useContext(DrawingContext);
+    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu, activeTool, setActiveTool } = useContext(DrawingContext);
 
     const handlePress = (e: GestureResponderEvent) => {
         if (openSubmenu.open) {
@@ -16,9 +16,17 @@ const ToolNavbar: React.FC = () => {
         }
     }
 
+    const handleSelectionToolPress = (e: GestureResponderEvent) => {
+        setActiveTool(activeTool === 'cursor-default' ? 'brush' : 'cursor-default');
+    }
+
     return (
         <TouchableWithoutFeedback onPress={handlePress}>
             <View style={styles.container}>
+                <ToolButton 
+                    onPress={handleSelectionToolPress}
+                    icon={"cursor-default"}
+                />
                 <ToolButton
                     onPress={() => setDrawing(!drawing)}
                     icon={drawing ? "pencil" : "cursor-move"}

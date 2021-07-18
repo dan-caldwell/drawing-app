@@ -47,4 +47,5 @@ export type SvgPath = {
   d: string,
   strokeWidth: number,
   fill: string
+  id: string
 }

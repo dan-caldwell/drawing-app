@@ -10,3 +10,4 @@
 [√] brush-utils and line-utils should be hooks so they can use context
 [ ] Options for auto join distance and to disable it
 [ ] Eraser mode and the ability to select shapes
+[ ] Give UUIDs to paths
