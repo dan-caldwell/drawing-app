@@ -1,6 +1,6 @@
 import React, { useRef, useState, useContext } from 'react';
 import { GestureResponderEvent, View, StyleSheet, Animated } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { G, Path, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
@@ -8,6 +8,7 @@ import useLineTool from 'drawing-app/hooks/useLineTool';
 import { SvgPath } from 'drawing-app/types';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
+import useSelection from 'drawing-app/hooks/useSelection';
 
 interface StartPoints {
     x: number | null,
@@ -15,15 +16,20 @@ interface StartPoints {
 }
 
 const DrawingCanvas: React.FC = () => {
-    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, strokeWidth, fill } = useContext(DrawingContext);
+    const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, strokeWidth, fill, selectedPath, setSelectedPath } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
+    const { setCurrentPathBoundaries } = useSelection();
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
     const lineContinuationRef = useRef(0);
 
     const handleResponderGrant = (e: GestureResponderEvent) => {
+        const x = e.nativeEvent.locationX;
+        const y = e.nativeEvent.locationY;
+        startRef.current = {x, y};
+
         if (activeTool === "cursor-default") return;
 
         if (openSubmenu.open) setOpenSubmenu({
@@ -36,9 +42,6 @@ const DrawingCanvas: React.FC = () => {
         moveRef.current = false;
         lineContinuationRef.current = 0;
         if (!drawing) return;
-        const x = e.nativeEvent.locationX;
-        const y = e.nativeEvent.locationY;
-        startRef.current = {x, y};
 
 
         if (activeTool === "vector-line") {
@@ -50,7 +53,13 @@ const DrawingCanvas: React.FC = () => {
             d: ` M${x} ${y}`,
             strokeWidth,
             fill,
-            id: uuid()
+            id: uuid(),
+            left: x,
+            right: x,
+            top: y,
+            bottom: y,
+            translateX: 0,
+            translateY: 0
         };
         setPaths(oldPaths => {
             const newPaths = clone(oldPaths);
@@ -60,9 +69,26 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderMove = (e: GestureResponderEvent) => {
-        if (!drawing || activeTool === "cursor-default") return;
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
+
+        if (selectedPath) {
+            // There is a selected path, so translate the path
+
+            setPaths(oldPaths => {
+                const newPaths = clone(oldPaths);
+                const selected = newPaths.find(item => item.id === selectedPath.id);
+                if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
+                // Translate the selected path
+                selected.translateX = x - startRef.current.x;
+                selected.translateY = y - startRef.current.y;
+                //setSelectedPath(selected);
+                return newPaths;
+            });
+            return;
+        }
+
+        if (!drawing) return;
 
         // For checking if there should be a dot created (or to prevent artifacts at the end of a line)
         moveRef.current = true;
@@ -102,14 +128,20 @@ const DrawingCanvas: React.FC = () => {
             setPaths(oldPaths => {
                 const newPaths = clone(oldPaths);
                 const currentPath = newPaths[newPaths.length - 1];
-                newPaths[newPaths.length - 1].d = currentPath.d + `L${x} ${y}`;
+                currentPath.d = currentPath.d + `L${x} ${y}`;
+                // Set the bounding box
+                currentPath.left = currentPath.right = x;
+                currentPath.top = currentPath.bottom = y;
                 return newPaths;
             });
+        } else {
+            // Sets the bounding box on the path
+            setCurrentPathBoundaries();
         }
     }
 
-    const handleSelectPath = (e: GestureResponderEvent, id: string) => {
-        console.log(id);
+    const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
+        setSelectedPath(path);
     }
 
     return (
@@ -121,8 +153,16 @@ const DrawingCanvas: React.FC = () => {
             style={styles.container}
         >
             <Svg style={styles.svg}>
+                {selectedPath &&
+                    <Rect x={selectedPath.left - 6} y={selectedPath.top - 6} width={selectedPath.right - selectedPath.left + 12} height={selectedPath.bottom - selectedPath.top + 12} stroke="blue" strokeWidth="3"></Rect>
+                }
                 {paths.map(path => (
-                    <Path onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path.id) : undefined} key={path.id} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
+                    <G
+                        key={path.id}
+                        transform={`translate(${path.translateX}, ${path.translateY})`}
+                    >
+                        <Path onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
+                    </G>
                 ))}
             </Svg>
         </Animated.View>

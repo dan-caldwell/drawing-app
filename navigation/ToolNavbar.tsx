@@ -8,7 +8,7 @@ import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 const ICON_MARGIN: number = 10;
 
 const ToolNavbar: React.FC = () => {
-    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu, activeTool, setActiveTool } = useContext(DrawingContext);
+    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu, activeTool, setActiveTool, setSelectedPath } = useContext(DrawingContext);
 
     const handlePress = (e: GestureResponderEvent) => {
         if (openSubmenu.open) {
@@ -18,6 +18,11 @@ const ToolNavbar: React.FC = () => {
 
     const handleSelectionToolPress = (e: GestureResponderEvent) => {
         setActiveTool(activeTool === 'cursor-default' ? 'brush' : 'cursor-default');
+    }
+
+    const handleResetDrawingCanvas = () => {
+        setPaths([]);
+        setSelectedPath(null);
     }
 
     return (
@@ -34,7 +39,7 @@ const ToolNavbar: React.FC = () => {
                 <ToolNavMenu />
                 <ToolButton 
                     active={false} 
-                    onPress={() => setPaths([])} 
+                    onPress={handleResetDrawingCanvas} 
                     icon="backup-restore"
                 />
                 <DrawingSettingsNavMenu />

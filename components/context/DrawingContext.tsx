@@ -1,7 +1,5 @@
 import React, { createContext, useState } from "react";
 import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
-import 'react-native-get-random-values';
-import { v4 as uuid } from 'uuid';
 
 interface ContextProps {
     drawing: boolean,
@@ -18,20 +16,17 @@ interface ContextProps {
     strokeWidth: number,
     setStrokeWidth: React.Dispatch<React.SetStateAction<number>>,
     fill: string,
-    setFill: React.Dispatch<React.SetStateAction<string>>
+    setFill: React.Dispatch<React.SetStateAction<string>>,
+    selectedPath: SvgPath | null,
+    setSelectedPath: React.Dispatch<React.SetStateAction<SvgPath | null>>
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
 
 const DrawingProvider: React.FC = ({children}) => {
-    const [drawing, setDrawing] = useState(false);
-    const [paths, setPaths] = useState([{
-        d: '',
-        strokeWidth: 5,
-        fill: '',
-        id: uuid()
-    }]);
-    const [activeTool, setActiveTool] = useState('brush');
+    const [drawing, setDrawing] = useState<boolean>(false);
+    const [paths, setPaths] = useState([] as SvgPath[]);
+    const [activeTool, setActiveTool] = useState<string>('brush');
     const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>({
         open: false,
         left: 0,
@@ -39,12 +34,13 @@ const DrawingProvider: React.FC = ({children}) => {
         target: null,
         reRendering: false
     });
-    const [autoJoin, setAutoJoin] = useState({
+    const [autoJoin, setAutoJoin] = useState<AutoJoin>({
         disabled: false,
         distance: 5
     });
-    const [strokeWidth, setStrokeWidth] = useState(10);
-    const [fill, setFill] = useState('');
+    const [strokeWidth, setStrokeWidth] = useState<number>(10);
+    const [fill, setFill] = useState<string>('');
+    const [selectedPath, setSelectedPath] = useState<SvgPath | null>(null);
 
     const resetOpenSubmenu = () => {
         setOpenSubmenu({
@@ -65,7 +61,8 @@ const DrawingProvider: React.FC = ({children}) => {
             resetOpenSubmenu,
             autoJoin, setAutoJoin,
             strokeWidth, setStrokeWidth,
-            fill, setFill
+            fill, setFill,
+            selectedPath, setSelectedPath
         }}>
             {children}
         </DrawingContext.Provider>

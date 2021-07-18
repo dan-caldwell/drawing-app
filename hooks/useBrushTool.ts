@@ -12,12 +12,12 @@ interface Move {
 }
 
 const useBrushTool = () => {
-    const { autoJoin, setAutoJoin } = useContext(DrawingContext);
+    const { autoJoin } = useContext(DrawingContext);
 
     const brushResponderMove = (args: Move) => {
         const { e, paths, x, y } = args; 
         const newPaths = clone(paths);
-        const currentPath = newPaths[newPaths.length - 1];
+        const currentPath: SvgPath = newPaths[newPaths.length - 1];
         const separatePoints = currentPath.d.split('L');
     
         const sliceAt = separatePoints.length < 6 ? 0 : separatePoints.length - 5;
