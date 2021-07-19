@@ -12,3 +12,4 @@
 [√] Options for auto join distance and to disable it
 [ ] When creating a new path, get the rectangle boundary of the path 
 [ ] Eraser mode and the ability to select shapes
+[ ] Use Polyline instead of Path

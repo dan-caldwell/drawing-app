@@ -72,6 +72,8 @@ const DrawingCanvas: React.FC = () => {
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
 
+        const regex = /\d*\.?\d*/g;
+
         if (selectedPath) {
             // There is a selected path, so translate the path
 
@@ -80,6 +82,21 @@ const DrawingCanvas: React.FC = () => {
                 const selected = newPaths.find(item => item.id === selectedPath.id);
                 if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
                 // Translate the selected path
+                //const translateX = x - startRef.current.x;
+                //const translateY = y - startRef.current.y;
+                // const digits = selected.d.match(regex)?.filter(digit => digit);
+                // digits?.forEach((digit, index) => {
+                //     const digitNum = Number(digit);
+                //     // if (index % 2 === 0) {
+                //     //     // X value
+                //     //     selected.d = selected.d.replace(digit, String(digitNum + translateX));
+                //     // } else {
+                //     //     // Y value
+                //     //     selected.d = selected.d.replace(digit, String(digitNum + translateY));
+                //     // }
+                // })
+                //const splitPath = selected.d.replace(/M/g, '').replace(/L/g, '').trim().split(' ');
+
                 selected.translateX = x - startRef.current.x;
                 selected.translateY = y - startRef.current.y;
                 //setSelectedPath(selected);
@@ -118,11 +135,37 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderRelease = (e: GestureResponderEvent) => {
-        if (!drawing || activeTool === "cursor-default") return;
-
+        
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
+        
+        if (selectedPath) {
+            // If the selected path has been translated, update the d values of the selected object to the translation
 
+            setPaths(oldPaths => {
+                const newPaths = clone(oldPaths);
+                const selected = newPaths.find(item => item.id === selectedPath.id);
+                if (!selected) return newPaths;
+                // const digits = selected.d.replace(/M/g, '').replace(/L/g, '').trim().split(' ');
+                // digits.forEach((digit, index) => {
+                //     const digitNum = Number(digit);
+                //     if (index % 2 === 0) {
+                //         // X value
+                //         selected.d = selected.d.replace(digit, String(digitNum - selected.translateX));
+                //     } else {
+                //         // Y value
+                //         selected.d = selected.d.replace(digit, String(digitNum - selected.translateY));
+                //     }
+                // });
+
+                selected.translateX = 0;
+                selected.translateY = 0;
+                return newPaths;
+            });
+            return;
+        }
+        
+        if (!drawing || activeTool === "cursor-default") return;
 
         if (!moveRef.current) {
             setPaths(oldPaths => {
