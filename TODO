@@ -10,6 +10,8 @@
 [√] brush-utils and line-utils should be hooks so they can use context
 [√] Give UUIDs to paths
 [√] Options for auto join distance and to disable it
-[ ] When creating a new path, get the rectangle boundary of the path 
+[√] Use Polyline instead of Path
+[√] When creating a new path, get the rectangle boundary of the path 
 [ ] Eraser mode and the ability to select shapes
-[ ] Use Polyline instead of Path
+[ ] Enable de-selecting of selection
+[ ] Get updated top/left/bottom/right points after moving a path

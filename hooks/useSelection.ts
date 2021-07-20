@@ -11,25 +11,23 @@ const useSelection = () => {
             const newPaths = clone(oldPaths);
             const currentPath = newPaths[newPaths.length - 1];
             // Find the top, bottom, left, and right values of the path
-            const pathDValues = currentPath.d.replace(/M/g, '').replace(/L/g, '').trim().split(' ');
+            const pathValues = currentPath.points.trim().split(' ');
             let right: number, bottom: number, left: number, top: number;
             right = bottom = left = top = 0;
-            pathDValues.forEach((value, index) => {
-                const numVal = Number(value);
+
+            pathValues.forEach((value, index) => {
+                const splitXY = value.split(',');
+                const numX = Number(splitXY[0]);
+                const numY = Number(splitXY[1]);
+                if (numX === 0 || numY === 0 || isNaN(numX) || isNaN(numY)) return;
                 if (index === 0) {
-                    // Start X value
-                    left = right = numVal;  
-                } else if (index === 1) {
-                    // Start Y value
-                    top = bottom = numVal;
-                } else if (index % 2 === 0) {
-                    // X value
-                    if (numVal > right) right = numVal;
-                    if (numVal < left) left = numVal;
+                    left = right = numX;
+                    top = bottom = numY;
                 } else {
-                    // Y value
-                    if (numVal > bottom) bottom = numVal;
-                    if (numVal < top) top = numVal;
+                    if (numX > right) right = numX;
+                    if (numX < left) left = numX;
+                    if (numY > bottom) bottom = numY;
+                    if (numY < top) top = numY;
                 }
             });
             currentPath.left = left;

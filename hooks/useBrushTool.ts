@@ -15,14 +15,15 @@ const useBrushTool = () => {
     const { autoJoin } = useContext(DrawingContext);
 
     const brushResponderMove = (args: Move) => {
-        const { e, paths, x, y } = args; 
+        const { paths, x, y } = args; 
         const newPaths = clone(paths);
         const currentPath: SvgPath = newPaths[newPaths.length - 1];
-        const separatePoints = currentPath.d.split('L');
+
+        const separatePoints = currentPath.points.split(' ');
     
         const sliceAt = separatePoints.length < 6 ? 0 : separatePoints.length - 5;
         const lastNPoints = separatePoints.slice(sliceAt).map((item: string) => {
-            const splitPoints = item.trim().replace('M', '').split(' ');
+            const splitPoints = item.trim().split(',');
             return [Number(splitPoints[0]), Number(splitPoints[1])];
         }).filter((item: any[]) => !isNaN(item[0]) && !isNaN(item[1]));
     
@@ -47,7 +48,7 @@ const useBrushTool = () => {
         let newY: number = yValue;
         
         if (!autoJoin.disabled) {
-            const firstPoint = separatePoints[0].trim().replace('M', '').split(' ');
+            const firstPoint = separatePoints[0].trim().split(',');
             if (firstPoint.length === 2 && separatePoints.length > autoJoin.distance) {
                 const firstX = Number(firstPoint[0]);
                 const firstY = Number(firstPoint[1]);
@@ -58,7 +59,7 @@ const useBrushTool = () => {
             }
         }
     
-        newPaths[newPaths.length - 1].d = currentPath.d + ` L${newX} ${newY}`;
+        newPaths[newPaths.length - 1].points = currentPath.points + `${newX},${newY} `;
         return newPaths;
     }
 

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useContext } from 'react';
 import { GestureResponderEvent, View, StyleSheet, Animated } from 'react-native';
-import Svg, { G, Path, Rect } from 'react-native-svg';
+import Svg, { G, Path, Polyline, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
@@ -50,7 +50,7 @@ const DrawingCanvas: React.FC = () => {
         }
 
         const pathData: SvgPath = {
-            d: ` M${x} ${y}`,
+            points: `${x},${y} `,
             strokeWidth,
             fill,
             id: uuid(),
@@ -81,25 +81,9 @@ const DrawingCanvas: React.FC = () => {
                 const newPaths = clone(oldPaths);
                 const selected = newPaths.find(item => item.id === selectedPath.id);
                 if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
-                // Translate the selected path
-                //const translateX = x - startRef.current.x;
-                //const translateY = y - startRef.current.y;
-                // const digits = selected.d.match(regex)?.filter(digit => digit);
-                // digits?.forEach((digit, index) => {
-                //     const digitNum = Number(digit);
-                //     // if (index % 2 === 0) {
-                //     //     // X value
-                //     //     selected.d = selected.d.replace(digit, String(digitNum + translateX));
-                //     // } else {
-                //     //     // Y value
-                //     //     selected.d = selected.d.replace(digit, String(digitNum + translateY));
-                //     // }
-                // })
-                //const splitPath = selected.d.replace(/M/g, '').replace(/L/g, '').trim().split(' ');
-
                 selected.translateX = x - startRef.current.x;
                 selected.translateY = y - startRef.current.y;
-                //setSelectedPath(selected);
+                setSelectedPath(selected);
                 return newPaths;
             });
             return;
@@ -146,20 +130,22 @@ const DrawingCanvas: React.FC = () => {
                 const newPaths = clone(oldPaths);
                 const selected = newPaths.find(item => item.id === selectedPath.id);
                 if (!selected) return newPaths;
-                // const digits = selected.d.replace(/M/g, '').replace(/L/g, '').trim().split(' ');
-                // digits.forEach((digit, index) => {
-                //     const digitNum = Number(digit);
-                //     if (index % 2 === 0) {
-                //         // X value
-                //         selected.d = selected.d.replace(digit, String(digitNum - selected.translateX));
-                //     } else {
-                //         // Y value
-                //         selected.d = selected.d.replace(digit, String(digitNum - selected.translateY));
-                //     }
-                // });
+                const splitPoints = selected.points.trim().split(' ');
+                let newPointsString = "";
+                splitPoints.forEach(points => {
+                    const pointsXY = points.split(',');
+                    const xVal = Number(pointsXY[0]) + selected.translateX;
+                    const yVal = Number(pointsXY[1]) + selected.translateY;
+                    newPointsString += `${xVal},${yVal} `;
+                });
+                selected.points = newPointsString;
 
                 selected.translateX = 0;
                 selected.translateY = 0;
+
+                // Also need to get the updated top/left/bottom/right points here
+
+                setSelectedPath(selected);
                 return newPaths;
             });
             return;
@@ -171,7 +157,7 @@ const DrawingCanvas: React.FC = () => {
             setPaths(oldPaths => {
                 const newPaths = clone(oldPaths);
                 const currentPath = newPaths[newPaths.length - 1];
-                currentPath.d = currentPath.d + `L${x} ${y}`;
+                currentPath.points = currentPath.points + `${x},${y} `;
                 // Set the bounding box
                 currentPath.left = currentPath.right = x;
                 currentPath.top = currentPath.bottom = y;
@@ -197,14 +183,26 @@ const DrawingCanvas: React.FC = () => {
         >
             <Svg style={styles.svg}>
                 {selectedPath &&
-                    <Rect x={selectedPath.left - 6} y={selectedPath.top - 6} width={selectedPath.right - selectedPath.left + 12} height={selectedPath.bottom - selectedPath.top + 12} stroke="blue" strokeWidth="3"></Rect>
+                    <G
+                        transform={`translate(${selectedPath.translateX}, ${selectedPath.translateY})`}
+                    >
+                        <Rect x={selectedPath.left - 6} y={selectedPath.top - 6} width={selectedPath.right - selectedPath.left + 12} height={selectedPath.bottom - selectedPath.top + 12} stroke="blue" strokeWidth="3"></Rect>
+                    </G>
                 }
                 {paths.map(path => (
                     <G
                         key={path.id}
                         transform={`translate(${path.translateX}, ${path.translateY})`}
                     >
-                        <Path onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} stroke="black" fill={path.fill || undefined} strokeWidth={path.strokeWidth} d={path.d} strokeLinecap="round" strokeLinejoin="round"></Path>
+                        <Polyline 
+                            onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} 
+                            stroke="black" 
+                            fill={path.fill || undefined} 
+                            strokeWidth={path.strokeWidth} 
+                            points={path.points} 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                        ></Polyline>
                     </G>
                 ))}
             </Svg>

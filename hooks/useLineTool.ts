@@ -21,47 +21,47 @@ const useLineTool = () => {
         const { paths, x, y, startX, startY, lineContinuation } = args; 
         const newPaths = clone(paths);
         if (lineContinuation === 1) {
-            newPaths[newPaths.length - 1].d = newPaths[newPaths.length - 1].d + ` L${x} ${y}`;
+            newPaths[newPaths.length - 1].points = newPaths[newPaths.length - 1].points + `${x},${y} `;
             return newPaths;
         } else if (lineContinuation === 2) {
             const lastPath = newPaths[newPaths.length - 1];
             if (lastPath) {
-                const lastPathSplit = lastPath.d.trim().split(' ');
+                const lastPathSplit = lastPath.points.trim().split(' ');
     
                 // Determine if the shape should be closed
                 // Connect the lines if the moving line is close enough to the first line
-                const firstX = lastPathSplit[0].replace('M', '');
-                const firstY = lastPathSplit[1];
+                const firstPoints = lastPathSplit[0].split(',');
+                const firstX = firstPoints[0];
+                const firstY = firstPoints[1];
     
                 const xDiff = Math.abs(Number(firstX) - x);
                 const yDiff = Math.abs(Number(firstY) - y);
     
                 if (!autoJoin.disabled && (xDiff < autoJoin.distance && yDiff < autoJoin.distance)) {
-                    lastPathSplit[lastPathSplit.length - 2] = `L${firstX}`;
-                    lastPathSplit[lastPathSplit.length - 1] = firstY;
+                    // The last point of the last path should be the first point of the last path (which closes the gap)
+                    lastPathSplit[lastPathSplit.length - 1] = `${firstX},${firstY} `;
                 } else {
-                    lastPathSplit[lastPathSplit.length - 2] = `L${x}`;
-                    lastPathSplit[lastPathSplit.length - 1] = String(y);
+                    // The last point of the last path should be the regular x and y values
+                    lastPathSplit[lastPathSplit.length - 1] = `${x},${y} `;
                 }
     
-                newPaths[newPaths.length - 1].d = lastPathSplit.join(' ');
+                newPaths[newPaths.length - 1].points = lastPathSplit.join(' ');
             }
             return newPaths;
-            //console.log(lastPath);
         }
     
         // If the mode is single line
-        newPaths[newPaths.length - 1].d = ` M${startX} ${startY} L${x} ${y}`;
-        //console.log(newPaths); 
+        newPaths[newPaths.length - 1].points = `${startX},${startY} ${x},${y} `;
         return newPaths;
     }
 
     const determineIfLineContinuation = (paths: SvgPath[], x: number, y: number, ref: React.MutableRefObject<number>) => {
         const lastPath = paths[paths.length - 1];
         if (lastPath && !ref.current) {
-            const lastPathSplit = lastPath.d.trim().replace(/M/g, '').replace(/L/g, '').split(' ');
-            const lastX = lastPathSplit[lastPathSplit.length - 2];
-            const lastY = lastPathSplit[lastPathSplit.length - 1];
+            const lastPathSplit = lastPath.points.trim().split(' ');
+            const lastPoints = lastPathSplit[lastPathSplit.length - 1].split(',');
+            const lastX = lastPoints[0];
+            const lastY = lastPoints[1];
             
             const xDiff = Math.abs(Number(lastX) - x);
             const yDiff = Math.abs(Number(lastY) - y);
