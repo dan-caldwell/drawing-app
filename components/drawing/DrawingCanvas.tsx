@@ -19,7 +19,7 @@ const DrawingCanvas: React.FC = () => {
     const { drawing, paths, setPaths, activeTool, openSubmenu, setOpenSubmenu, strokeWidth, fill, selectedPath, setSelectedPath } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
-    const { setCurrentPathBoundaries } = useSelection();
+    const { setCurrentPathBoundaries, updateSelectionAfterRelease } = useSelection();
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
@@ -29,6 +29,15 @@ const DrawingCanvas: React.FC = () => {
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
         startRef.current = {x, y};
+
+        if (selectedPath) {
+            if (!(x >= selectedPath.left && x <= selectedPath.right && y >= selectedPath.top && y <= selectedPath.bottom)) {
+                // The selection is outside of the selected path area, so deselect
+                setSelectedPath(null);
+                return;
+            }
+            return;
+        }
 
         if (activeTool === "cursor-default") return;
 
@@ -72,24 +81,7 @@ const DrawingCanvas: React.FC = () => {
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
 
-        const regex = /\d*\.?\d*/g;
-
-        if (selectedPath) {
-            // There is a selected path, so translate the path
-
-            setPaths(oldPaths => {
-                const newPaths = clone(oldPaths);
-                const selected = newPaths.find(item => item.id === selectedPath.id);
-                if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
-                selected.translateX = x - startRef.current.x;
-                selected.translateY = y - startRef.current.y;
-                setSelectedPath(selected);
-                return newPaths;
-            });
-            return;
-        }
-
-        if (!drawing) return;
+        if (!drawing || selectedPath) return;
 
         // For checking if there should be a dot created (or to prevent artifacts at the end of a line)
         moveRef.current = true;
@@ -124,36 +116,14 @@ const DrawingCanvas: React.FC = () => {
         const y = e.nativeEvent.locationY;
         
         if (selectedPath) {
-            // If the selected path has been translated, update the d values of the selected object to the translation
-
-            setPaths(oldPaths => {
-                const newPaths = clone(oldPaths);
-                const selected = newPaths.find(item => item.id === selectedPath.id);
-                if (!selected) return newPaths;
-                const splitPoints = selected.points.trim().split(' ');
-                let newPointsString = "";
-                splitPoints.forEach(points => {
-                    const pointsXY = points.split(',');
-                    const xVal = Number(pointsXY[0]) + selected.translateX;
-                    const yVal = Number(pointsXY[1]) + selected.translateY;
-                    newPointsString += `${xVal},${yVal} `;
-                });
-                selected.points = newPointsString;
-
-                selected.translateX = 0;
-                selected.translateY = 0;
-
-                // Also need to get the updated top/left/bottom/right points here
-
-                setSelectedPath(selected);
-                return newPaths;
-            });
+            updateSelectionAfterRelease();
             return;
         }
         
         if (!drawing || activeTool === "cursor-default") return;
 
         if (!moveRef.current) {
+            // Creates a dot
             setPaths(oldPaths => {
                 const newPaths = clone(oldPaths);
                 const currentPath = newPaths[newPaths.length - 1];
@@ -170,7 +140,35 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
-        setSelectedPath(path);
+        //setSelectedPath(path);
+    }
+
+    const handleSelectedResponderGrant = (e: GestureResponderEvent, path: SvgPath) => {
+        if (!selectedPath || selectedPath.id !== path.id) {
+            setSelectedPath(path);
+        }
+    }
+
+    const handleSelectedResponderRelease = (e: GestureResponderEvent, path: SvgPath) => {
+
+    }
+
+    const handleSelectedResponderMove = (e: GestureResponderEvent, path: SvgPath) => {
+        if (selectedPath) {
+            const x = e.nativeEvent.locationX;
+            const y = e.nativeEvent.locationY;
+            // There is a selected path, so translate the path
+            setPaths(oldPaths => {
+                const newPaths = clone(oldPaths);
+                const selected = newPaths.find(item => item.id === selectedPath.id);
+                if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
+                selected.translateX = x - startRef.current.x;
+                selected.translateY = y - startRef.current.y;
+                setSelectedPath(selected);
+                return newPaths;
+            });
+            return;
+        }
     }
 
     return (
@@ -183,9 +181,7 @@ const DrawingCanvas: React.FC = () => {
         >
             <Svg style={styles.svg}>
                 {selectedPath &&
-                    <G
-                        transform={`translate(${selectedPath.translateX}, ${selectedPath.translateY})`}
-                    >
+                    <G transform={`translate(${selectedPath.translateX}, ${selectedPath.translateY})`}>
                         <Rect x={selectedPath.left - 6} y={selectedPath.top - 6} width={selectedPath.right - selectedPath.left + 12} height={selectedPath.bottom - selectedPath.top + 12} stroke="blue" strokeWidth="3"></Rect>
                     </G>
                 }
@@ -195,8 +191,11 @@ const DrawingCanvas: React.FC = () => {
                         transform={`translate(${path.translateX}, ${path.translateY})`}
                     >
                         <Polyline 
-                            onPress={activeTool === "cursor-default" ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} 
-                            stroke="black" 
+                            onResponderGrant={(e: GestureResponderEvent) => handleSelectedResponderGrant(e, path)}
+                            onResponderMove={(e: GestureResponderEvent) => handleSelectedResponderMove(e, path)}
+                            onResponderRelease={(e: GestureResponderEvent) => handleSelectedResponderRelease(e, path)}
+                            onPress={activeTool === "cursor-default" && selectedPath?.id !== path.id ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} 
+                            stroke="black"
                             fill={path.fill || undefined} 
                             strokeWidth={path.strokeWidth} 
                             points={path.points} 

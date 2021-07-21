@@ -12,6 +12,7 @@
 [√] Options for auto join distance and to disable it
 [√] Use Polyline instead of Path
 [√] When creating a new path, get the rectangle boundary of the path 
+[√] Get updated top/left/bottom/right points after moving a path
 [ ] Eraser mode and the ability to select shapes
 [ ] Enable de-selecting of selection
-[ ] Get updated top/left/bottom/right points after moving a path
+[ ] Path jumps around when you try to move it
