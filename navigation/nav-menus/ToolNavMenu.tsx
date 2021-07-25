@@ -1,49 +1,56 @@
 import ToolButton from 'drawing-app/components/tools/ToolButton';
-import React, { useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { View } from 'react-native';
 import TooltipSubmenu from '../TooltipSubmenu';
 import useNavMenu from "drawing-app/hooks/useNavMenu";
+import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
 type Tool = {
     tool: string,
     text: string
 }
 
-const tools: Tool[] = [
-    {
-        tool: "brush",
-        text: "Brush"
-    },
-    {
-        tool: "vector-line",
-        text: "Line"
-    },
-    {
-        tool: "format-color-fill",
-        text: "Fill"
-    }
-]
 
-const acceptableTargets = tools.map(item => item.tool);
 
 const ToolNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { handleNavButtonPress, styles, openSubmenu, activeTool, setActiveTool, handleSubmenuButtonPress, drawing, setDrawing } = useNavMenu(submenuRef);
+    const { tools } = useContext(DrawingContext);
+    const { handleNavButtonPress, styles, openSubmenu, activeTool, setActiveTool, handleSubmenuButtonPress } = useNavMenu(submenuRef);
 
     const handlePress = (tool: string) => {
-        if (!drawing) setDrawing(true);
         handleSubmenuButtonPress(() => setActiveTool(tool));
     }
+
+    const acceptableTools: Tool[] = [
+        {
+            tool: tools.move,
+            text: "Move"
+        },
+        {
+            tool: tools.select,
+            text: "Select"
+        },
+        {
+            tool: tools.brush,
+            text: "Brush"
+        },
+        {
+            tool: tools.line,
+            text: "Line"
+        },
+    ]
+
+    const acceptableTargets = acceptableTools.map(item => item.tool);
 
     return (
         <>
             <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(openSubmenu.target || '')}>
-                {tools.map((item, index) => (
+                {acceptableTools.map((item, index) => (
                     <ToolButton
                         text={item.text}
                         onPress={() => handlePress(item.tool)}
                         icon={item.tool}
-                        style={index === tools.length - 1 ? styles.lastSubmenuButton : styles.submenuButton}
+                        style={index === acceptableTools.length - 1 ? styles.lastSubmenuButton : styles.submenuButton}
                         key={item.tool}
                     />
                 ))}

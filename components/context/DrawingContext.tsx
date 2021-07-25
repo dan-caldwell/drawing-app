@@ -18,7 +18,8 @@ interface ContextProps {
     fill: string,
     setFill: React.Dispatch<React.SetStateAction<string>>,
     selectedPath: SvgPath | null,
-    setSelectedPath: React.Dispatch<React.SetStateAction<SvgPath | null>>
+    setSelectedPath: React.Dispatch<React.SetStateAction<SvgPath | null>>,
+    tools: any
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
@@ -51,6 +52,13 @@ const DrawingProvider: React.FC = ({children}) => {
             reRendering: false
         });
     }
+
+    const tools = {
+        move: "cursor-move",
+        select: "cursor-default",
+        brush: "brush",
+        line: "vector-line"
+    }
     
     return (
         <DrawingContext.Provider value={{
@@ -62,7 +70,8 @@ const DrawingProvider: React.FC = ({children}) => {
             autoJoin, setAutoJoin,
             strokeWidth, setStrokeWidth,
             fill, setFill,
-            selectedPath, setSelectedPath
+            selectedPath, setSelectedPath,
+            tools
         }}>
             {children}
         </DrawingContext.Provider>

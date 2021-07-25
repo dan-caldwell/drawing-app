@@ -55,3 +55,8 @@ export type SvgPath = {
   translateX: number,
   translateY: number
 }
+
+export type StartPoints = {
+  x: number | null,
+  y: number | null
+}

@@ -14,7 +14,7 @@ interface Offset {
 }
 
 const Gestures: React.FC<Props> = ({ children }) => {
-    const { drawing } = useContext(DrawingContext);
+    const { activeTool, tools } = useContext(DrawingContext);
     const translationXRef = useRef(new Animated.Value(0));
     const translationYRef = useRef(new Animated.Value(0));
     const lastOffset = useRef<Offset>({x: 0, y: 0});
@@ -70,7 +70,7 @@ const Gestures: React.FC<Props> = ({ children }) => {
 
 
     return (
-        <PanGestureHandler enabled={!drawing} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
+        <PanGestureHandler enabled={activeTool === tools.move} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
             <Animated.View
                 style={{
                     transform: [
@@ -79,7 +79,7 @@ const Gestures: React.FC<Props> = ({ children }) => {
                     ]
                 }}
             >
-                <PinchGestureHandler enabled={!drawing} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
+                <PinchGestureHandler enabled={activeTool === tools.move} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
                     <Animated.View
                         style={{
                             transform: [

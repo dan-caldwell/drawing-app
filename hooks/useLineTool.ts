@@ -2,23 +2,25 @@ import { useContext } from 'react';
 import { GestureResponderEvent } from "react-native";
 import clone from 'clone';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
-import { SvgPath } from '@types';
+import { StartPoints, SvgPath } from '@types';
 
 interface Move {
     e: GestureResponderEvent,
     paths: SvgPath[],
     x: number,
     y: number,
-    startX: number | null,
-    startY: number | null,
-    lineContinuation: number,
+    startRef: React.MutableRefObject<StartPoints>,
+    lineContinuationRef: React.MutableRefObject<number>
 }
 
 const useLineTool = () => {
     const { autoJoin } = useContext(DrawingContext);
     
     const lineResponderMove = (args: Move) => {
-        const { paths, x, y, startX, startY, lineContinuation } = args; 
+        const { paths, x, y, startRef, lineContinuationRef } = args; 
+        const startX = startRef.current.x;
+        const startY = startRef.current.y;
+        const lineContinuation = lineContinuationRef.current;
         const newPaths = clone(paths);
         if (lineContinuation === 1) {
             newPaths[newPaths.length - 1].points = newPaths[newPaths.length - 1].points + `${x},${y} `;

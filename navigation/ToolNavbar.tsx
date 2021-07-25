@@ -17,7 +17,7 @@ const ToolNavbar: React.FC = () => {
     }
 
     const handleSelectionToolPress = (e: GestureResponderEvent) => {
-        setActiveTool(activeTool === 'cursor-default' ? 'brush' : 'cursor-default');
+        setActiveTool('cursor-default');
     }
 
     const handleResetDrawingCanvas = () => {
@@ -25,16 +25,28 @@ const ToolNavbar: React.FC = () => {
         setSelectedPath(null);
     }
 
+    const handleToolPress = (tool: string) => {
+        switch (tool) {
+            case "cursor-move":
+                setDrawing(false);
+                setActiveTool(tool);
+            case "cursor-default":
+                setActiveTool(tool);
+        }
+    }
+
     return (
         <TouchableWithoutFeedback onPress={handlePress}>
             <View style={styles.container}>
-                <ToolButton 
-                    onPress={handleSelectionToolPress}
-                    icon={"cursor-default"}
-                />
                 <ToolButton
-                    onPress={() => setDrawing(!drawing)}
-                    icon={drawing ? "pencil" : "cursor-move"}
+                    onPress={() => handleToolPress("cursor-move")}
+                    icon={"cursor-move"}
+                    active={activeTool === "cursor-move"}
+                />
+                <ToolButton 
+                    onPress={() => handleToolPress("cursor-default")}
+                    icon={"cursor-default"}
+                    active={activeTool === "cursor-default"}
                 />
                 <ToolNavMenu />
                 <ToolButton 
