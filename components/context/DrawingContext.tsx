@@ -1,50 +1,62 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
+import useContextState from 'drawing-app/hooks/useContextState';
+
+type ContextState<T> = {
+    get: T,
+    set: React.Dispatch<React.SetStateAction<T>>
+}
 
 interface ContextProps {
-    drawing: boolean,
-    setDrawing: React.Dispatch<React.SetStateAction<boolean>>,
-    paths: SvgPath[],
-    setPaths: React.Dispatch<React.SetStateAction<SvgPath[]>>,
-    activeTool: string,
-    setActiveTool: React.Dispatch<React.SetStateAction<string>>
-    openSubmenu: OpenSubmenu,
-    setOpenSubmenu: React.Dispatch<React.SetStateAction<OpenSubmenu>>,
+    paths: ContextState<SvgPath[]>,
+    activeTool: ContextState<string | null>,
+    openSubmenu: ContextState<OpenSubmenu>,
+    autoJoin: ContextState<AutoJoin>,
+    strokeWidth: ContextState<number>,
+    fill: ContextState<string>,
+    selectedPath: ContextState<SvgPath | null>,
     resetOpenSubmenu: () => void,
-    autoJoin: AutoJoin,
-    setAutoJoin: React.Dispatch<React.SetStateAction<AutoJoin>>,
-    strokeWidth: number,
-    setStrokeWidth: React.Dispatch<React.SetStateAction<number>>,
-    fill: string,
-    setFill: React.Dispatch<React.SetStateAction<string>>,
-    selectedPath: SvgPath | null,
-    setSelectedPath: React.Dispatch<React.SetStateAction<SvgPath | null>>,
-    tools: any
+    activeDrawTool: ContextState<string | null>,
+    tools: {
+        move: string,
+        select: string,
+        brush: string,
+        line: string,
+        reset: string
+    }
+}
+
+const tools = {
+    move: "cursor-move",
+    select: "cursor-default",
+    brush: "brush",
+    line: "vector-line",
+    reset: "backup-restore"
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
 
 const DrawingProvider: React.FC = ({children}) => {
-    const [drawing, setDrawing] = useState<boolean>(false);
-    const [paths, setPaths] = useState([] as SvgPath[]);
-    const [activeTool, setActiveTool] = useState<string>('brush');
-    const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>({
+    const paths = useContextState<SvgPath[]>([] as SvgPath[]);
+    const activeTool = useContextState<string | null>('brush');
+    const openSubmenu = useContextState<OpenSubmenu>({
         open: false,
         left: 0,
         bottom: 0,
         target: null,
         reRendering: false
     });
-    const [autoJoin, setAutoJoin] = useState<AutoJoin>({
+    const activeDrawTool = useContextState<string | null>('brush');
+    const autoJoin = useContextState<AutoJoin>({
         disabled: false,
         distance: 5
     });
-    const [strokeWidth, setStrokeWidth] = useState<number>(10);
-    const [fill, setFill] = useState<string>('');
-    const [selectedPath, setSelectedPath] = useState<SvgPath | null>(null);
+    const strokeWidth = useContextState<number>(10);
+    const fill = useContextState<string>('');
+    const selectedPath = useContextState<SvgPath | null>(null);
 
     const resetOpenSubmenu = () => {
-        setOpenSubmenu({
+        openSubmenu.set({
             bottom: 0,
             left: 0,
             open: false,
@@ -52,25 +64,18 @@ const DrawingProvider: React.FC = ({children}) => {
             reRendering: false
         });
     }
-
-    const tools = {
-        move: "cursor-move",
-        select: "cursor-default",
-        brush: "brush",
-        line: "vector-line"
-    }
     
     return (
         <DrawingContext.Provider value={{
-            drawing, setDrawing,
-            paths, setPaths,
-            activeTool, setActiveTool,
-            openSubmenu, setOpenSubmenu,
+            paths,
+            activeTool,
+            openSubmenu,
             resetOpenSubmenu,
-            autoJoin, setAutoJoin,
-            strokeWidth, setStrokeWidth,
-            fill, setFill,
-            selectedPath, setSelectedPath,
+            autoJoin,
+            strokeWidth,
+            fill,
+            selectedPath,
+            activeDrawTool,
             tools
         }}>
             {children}

@@ -7,25 +7,31 @@ import { ICON_MARGIN } from 'drawing-app/constants/Layout';
 
 interface Props {
     text?: string,
-    onPress: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
+    onPress?: () => void,
+    onLongPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
     active?: boolean,
     children?: JSX.Element | React.FC,
     style?: object[] | object,
     icon?: any
 }
 
-const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon}) => {
+const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress}) => {
     const buttonRef = useRef<View>(null);
 
-    const handlePress = async (e: GestureResponderEvent) => {
+    const handleLongPress = async (e: GestureResponderEvent) => {
         if (!buttonRef.current) return;
         const measurement = await measureComponent(buttonRef.current);
-        onPress(e, measurement, icon);
+        if (!onLongPress) return;
+        onLongPress(e, measurement, icon);
     }
 
     return (
         <View style={styles.container} ref={buttonRef}>
-            <TouchableOpacity style={[styles.button, active ? styles.active : null, style || null]} onPress={handlePress}>
+            <TouchableOpacity 
+                style={[styles.button, active ? styles.active : null, style || null]} 
+                onPress={onPress} 
+                onLongPress={handleLongPress} 
+            >
                 {icon && <MaterialCommunityIcons name={icon} size={24} color="black"/>}
                 {text && <Text style={active ? styles.activeText : null}>{text}</Text>}
             </TouchableOpacity>

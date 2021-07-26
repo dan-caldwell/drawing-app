@@ -70,7 +70,7 @@ const Gestures: React.FC<Props> = ({ children }) => {
 
 
     return (
-        <PanGestureHandler enabled={activeTool === tools.move} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
+        <PanGestureHandler enabled={activeTool.get === tools.move} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
             <Animated.View
                 style={{
                     transform: [
@@ -79,7 +79,7 @@ const Gestures: React.FC<Props> = ({ children }) => {
                     ]
                 }}
             >
-                <PinchGestureHandler enabled={activeTool === tools.move} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
+                <PinchGestureHandler enabled={activeTool.get === tools.move} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
                     <Animated.View
                         style={{
                             transform: [

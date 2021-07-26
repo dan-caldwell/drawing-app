@@ -4,10 +4,10 @@ import clone from 'clone';
 
 
 const useSelection = () => {
-    const { setPaths, setSelectedPath, selectedPath } = useContext(DrawingContext);
+    const { paths, selectedPath } = useContext(DrawingContext);
 
     const setCurrentPathBoundaries = () => {
-        setPaths(oldPaths => {
+        paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
             const currentPath = newPaths[newPaths.length - 1];
             // Find the top, bottom, left, and right values of the path
@@ -39,11 +39,11 @@ const useSelection = () => {
     }
 
     const updateSelectionAfterRelease = () => {
-        if (!selectedPath) return;
+        if (!selectedPath.get) return;
         // If the selected path has been translated, update the values of the selected object to the translation
-        setPaths(oldPaths => {
+        paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
-            const selected = newPaths.find(item => item.id === selectedPath.id);
+            const selected = newPaths.find(item => item.id === selectedPath.get?.id);
             if (!selected) return newPaths;
             const splitPoints = selected.points.trim().split(' ');
             let newPointsString = "";
@@ -65,7 +65,7 @@ const useSelection = () => {
             selected.translateX = 0;
             selected.translateY = 0;
 
-            setSelectedPath(selected);
+            selectedPath.set(selected);
             return newPaths;
         });
     }

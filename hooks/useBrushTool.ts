@@ -47,12 +47,12 @@ const useBrushTool = () => {
         let newX: number = xValue;
         let newY: number = yValue;
         
-        if (!autoJoin.disabled) {
+        if (!autoJoin.get.disabled) {
             const firstPoint = separatePoints[0].trim().split(',');
-            if (firstPoint.length === 2 && separatePoints.length > autoJoin.distance) {
+            if (firstPoint.length === 2 && separatePoints.length > autoJoin.get.distance) {
                 const firstX = Number(firstPoint[0]);
                 const firstY = Number(firstPoint[1]);
-                if (Math.abs(xValue - firstX) < autoJoin.distance && Math.abs(yValue - firstY) < autoJoin.distance) {
+                if (Math.abs(xValue - firstX) < autoJoin.get.distance && Math.abs(yValue - firstY) < autoJoin.get.distance) {
                     newX = firstX;
                     newY = firstY;
                 }

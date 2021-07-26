@@ -1,5 +1,5 @@
 import ToolButton from 'drawing-app/components/tools/ToolButton';
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { View } from 'react-native';
 import TooltipSubmenu from '../TooltipSubmenu';
 import useNavMenu from "drawing-app/hooks/useNavMenu";
@@ -14,22 +14,15 @@ type Tool = {
 
 const ToolNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { tools } = useContext(DrawingContext);
-    const { handleNavButtonPress, styles, openSubmenu, activeTool, setActiveTool, handleSubmenuButtonPress } = useNavMenu(submenuRef);
+    const { tools, activeTool, activeDrawTool } = useContext(DrawingContext);
+    const { handleNavButtonPress, styles, openSubmenu, handleSubmenuButtonPress } = useNavMenu(submenuRef);
 
     const handlePress = (tool: string) => {
-        handleSubmenuButtonPress(() => setActiveTool(tool));
+        handleSubmenuButtonPress(() => activeTool.set(tool));
+        activeDrawTool.set(tool);
     }
 
     const acceptableTools: Tool[] = [
-        {
-            tool: tools.move,
-            text: "Move"
-        },
-        {
-            tool: tools.select,
-            text: "Select"
-        },
         {
             tool: tools.brush,
             text: "Brush"
@@ -40,11 +33,11 @@ const ToolNavMenu: React.FC = () => {
         },
     ]
 
-    const acceptableTargets = acceptableTools.map(item => item.tool);
+    const acceptableTargets: string[] | null[] = acceptableTools.map(item => item.tool);
 
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && acceptableTargets.includes(openSubmenu.target || '')}>
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && acceptableTargets.includes(openSubmenu.get.target || '')}>
                 {acceptableTools.map((item, index) => (
                     <ToolButton
                         text={item.text}
@@ -56,9 +49,10 @@ const ToolNavMenu: React.FC = () => {
                 ))}
             </TooltipSubmenu>
             <ToolButton 
-                active={false}
-                onPress={handleNavButtonPress}
-                icon={activeTool}
+                active={acceptableTargets.includes(activeTool.get || '')}
+                onLongPress={handleNavButtonPress}
+                onPress={() => activeTool.set(activeDrawTool.get)}
+                icon={activeDrawTool.get}
             />
         </>
     )

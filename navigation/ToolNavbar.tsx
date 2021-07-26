@@ -8,51 +8,39 @@ import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 const ICON_MARGIN: number = 10;
 
 const ToolNavbar: React.FC = () => {
-    const { setPaths, drawing, setDrawing, resetOpenSubmenu, openSubmenu, activeTool, setActiveTool, setSelectedPath } = useContext(DrawingContext);
+    const { paths, resetOpenSubmenu, openSubmenu, activeTool, activeDrawTool, selectedPath, tools } = useContext(DrawingContext);
 
     const handlePress = (e: GestureResponderEvent) => {
-        if (openSubmenu.open) {
-            resetOpenSubmenu();
-        }
-    }
-
-    const handleSelectionToolPress = (e: GestureResponderEvent) => {
-        setActiveTool('cursor-default');
+        if (openSubmenu.get.open) resetOpenSubmenu();
     }
 
     const handleResetDrawingCanvas = () => {
-        setPaths([]);
-        setSelectedPath(null);
+        paths.set([]);
+        selectedPath.set(null);
     }
 
     const handleToolPress = (tool: string) => {
-        switch (tool) {
-            case "cursor-move":
-                setDrawing(false);
-                setActiveTool(tool);
-            case "cursor-default":
-                setActiveTool(tool);
-        }
+        activeTool.get === tool ? activeTool.set(activeDrawTool.get) : activeTool.set(tool);
     }
 
     return (
         <TouchableWithoutFeedback onPress={handlePress}>
             <View style={styles.container}>
                 <ToolButton
-                    onPress={() => handleToolPress("cursor-move")}
-                    icon={"cursor-move"}
-                    active={activeTool === "cursor-move"}
+                    onPress={() => handleToolPress(tools.move)}
+                    icon={tools.move}
+                    active={activeTool.get === tools.move}
                 />
                 <ToolButton 
-                    onPress={() => handleToolPress("cursor-default")}
-                    icon={"cursor-default"}
-                    active={activeTool === "cursor-default"}
+                    onPress={() => handleToolPress(tools.select)}
+                    icon={tools.select}
+                    active={activeTool.get === tools.select}
                 />
                 <ToolNavMenu />
                 <ToolButton 
                     active={false} 
                     onPress={handleResetDrawingCanvas} 
-                    icon="backup-restore"
+                    icon={tools.reset}
                 />
                 <DrawingSettingsNavMenu />
             </View>

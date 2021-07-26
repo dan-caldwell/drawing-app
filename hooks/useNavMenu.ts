@@ -6,21 +6,21 @@ import { ICON_MARGIN, windowWidth } from 'drawing-app/constants/Layout';
 import { measureComponent } from 'drawing-app/utils';
 
 const useNavMenu = (submenuRef: React.RefObject<View>) => {
-    const { openSubmenu, setOpenSubmenu, drawing, setDrawing, activeTool, setActiveTool, resetOpenSubmenu } = useContext(DrawingContext);
+    const { openSubmenu, activeTool, resetOpenSubmenu } = useContext(DrawingContext);
 
     const handleNavButtonPress = async (e: GestureResponderEvent, measurement: Measurement, target: string) => {
 
         if (!submenuRef.current) return;
-        if (openSubmenu.open && openSubmenu.target === target) {
+        if (openSubmenu.get.open && openSubmenu.get.target === target) {
             resetOpenSubmenu();
             return;
         }
         const submenuMeasurement = await measureComponent(submenuRef.current);
 
         // Handle 0 values for width and height
-        // This will only run once as it requires openSubmenu.reRendering to be set to false
-        if ((submenuMeasurement.width === 0 || submenuMeasurement.height === 0) && !openSubmenu.reRendering) {
-            setOpenSubmenu({
+        // This will only run once as it requires openSubmenu.get.reRendering to be set to false
+        if ((submenuMeasurement.width === 0 || submenuMeasurement.height === 0) && !openSubmenu.get.reRendering) {
+            openSubmenu.set({
                 left: 0,
                 bottom: measurement.y + measurement.height,
                 open: true,
@@ -36,7 +36,7 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
         let leftValue = measurement.x + (measurement.width / 2) - submenuWidth;
         if (leftValue < 0) leftValue = ICON_MARGIN;
         if (leftValue > windowWidth) leftValue = windowWidth;
-        setOpenSubmenu({
+        openSubmenu.set({
             left: leftValue,
             bottom: measurement.y + measurement.height,
             open: true,
@@ -50,7 +50,7 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
         callback();
     }
 
-    return { handleNavButtonPress, styles, drawing, setDrawing, openSubmenu, activeTool, setActiveTool, handleSubmenuButtonPress }
+    return { handleNavButtonPress, styles, openSubmenu, activeTool, handleSubmenuButtonPress }
 }
 
 export default useNavMenu;

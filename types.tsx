@@ -53,7 +53,8 @@ export type SvgPath = {
   top: number,
   bottom: number,
   translateX: number,
-  translateY: number
+  translateY: number,
+  rotation: number
 }
 
 export type StartPoints = {

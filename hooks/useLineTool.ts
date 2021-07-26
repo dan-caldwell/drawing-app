@@ -39,7 +39,7 @@ const useLineTool = () => {
                 const xDiff = Math.abs(Number(firstX) - x);
                 const yDiff = Math.abs(Number(firstY) - y);
     
-                if (!autoJoin.disabled && (xDiff < autoJoin.distance && yDiff < autoJoin.distance)) {
+                if (!autoJoin.get.disabled && (xDiff < autoJoin.get.distance && yDiff < autoJoin.get.distance)) {
                     // The last point of the last path should be the first point of the last path (which closes the gap)
                     lastPathSplit[lastPathSplit.length - 1] = `${firstX},${firstY} `;
                 } else {
@@ -67,7 +67,7 @@ const useLineTool = () => {
             
             const xDiff = Math.abs(Number(lastX) - x);
             const yDiff = Math.abs(Number(lastY) - y);
-            if (xDiff < autoJoin.distance && yDiff < autoJoin.distance) {
+            if (xDiff < autoJoin.get.distance && yDiff < autoJoin.get.distance) {
                 return 1;
             }
         }

@@ -9,7 +9,7 @@ import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
 const DrawingSettingsNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { autoJoin, setAutoJoin, strokeWidth, setStrokeWidth } = useContext(DrawingContext);
+    const { autoJoin, strokeWidth } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu } = useNavMenu(submenuRef);
 
     const handleSubmenuPress = () => {
@@ -17,19 +17,19 @@ const DrawingSettingsNavMenu: React.FC = () => {
     }
 
     const handleAutoJoinDistanceSlider = (value: number) => {
-        setAutoJoin({
+        autoJoin.set({
             disabled: false,
             distance: value
         });
     }
 
     const handleBrushStrokeSizeSlider = (value: number) => {
-        setStrokeWidth(value);
+        strokeWidth.set(value);
     }
 
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={openSubmenu.open && openSubmenu.target === "cog"}>
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === "cog"}>
                 <ToolButton 
                     text="Move"
                     onPress={handleSubmenuPress}
@@ -42,18 +42,18 @@ const DrawingSettingsNavMenu: React.FC = () => {
                     maximumValue={20}
                     onValueChange={handleAutoJoinDistanceSlider}
                     step={1}
-                    value={autoJoin.distance}
+                    value={autoJoin.get.distance}
                 />
-                <Text style={localStyles.label}>Auto-join Distance: {autoJoin.distance}</Text>
+                <Text style={localStyles.label}>Auto-join Distance: {autoJoin.get.distance}</Text>
                 <Slider
                     style={styles.slider}
                     minimumValue={1}
                     maximumValue={20}
                     onValueChange={handleBrushStrokeSizeSlider}
                     step={1}
-                    value={strokeWidth}
+                    value={strokeWidth.get}
                 />
-                <Text style={localStyles.label}>Stroke Width: {strokeWidth}</Text>
+                <Text style={localStyles.label}>Stroke Width: {strokeWidth.get}</Text>
             </TooltipSubmenu>
             <ToolButton 
                 active={false}

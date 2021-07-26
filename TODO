@@ -15,5 +15,6 @@
 [√] Get updated top/left/bottom/right points after moving a path
 [√] Path jumps around when you try to move it
 [√] Can't select line paths
+[ ] Rotate selection
 [ ] Eraser mode and the ability to select shapes
 [ ] Enable de-selecting of selection

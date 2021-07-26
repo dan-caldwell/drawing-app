@@ -20,10 +20,10 @@ const TooltipSubmenu = React.forwardRef<View, Props>((props, ref) => {
             style={[
                 styles.container, 
                 { 
-                    opacity: openSubmenu.reRendering ? 0 : 1,
-                    display: open || openSubmenu.reRendering ? "flex" : "none",
-                    left: openSubmenu.left, 
-                    bottom: openSubmenu.bottom,
+                    opacity: openSubmenu.get.reRendering ? 0 : 1,
+                    display: open || openSubmenu.get.reRendering ? "flex" : "none",
+                    left: openSubmenu.get.left, 
+                    bottom: openSubmenu.get.bottom,
                 }
             ]}
         >
