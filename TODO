@@ -16,5 +16,6 @@
 [√] Path jumps around when you try to move it
 [√] Can't select line paths
 [ ] Rotate selection
+[ ] Get new right and bottom values on rotation (to properly set width and height for rotation box)
 [ ] Eraser mode and the ability to select shapes
 [ ] Enable de-selecting of selection
