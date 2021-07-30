@@ -61,6 +61,7 @@ const useSelection = () => {
             selected.bottom = selected.bottom + selected.translateY;
             selected.left = selected.left + selected.translateX;
             selected.right = selected.right + selected.translateX;
+            
             // Reset the translation
             selected.translateX = 0;
             selected.translateY = 0;

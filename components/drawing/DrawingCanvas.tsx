@@ -183,7 +183,21 @@ const DrawingCanvas: React.FC = () => {
         return rotation * (Math.PI / 180);
     }
 
+    const getTranslatedPoints = (x: number, y: number, rotation: number, originX: number, originY: number) => {
+        return {
+            x: (((x - originX) * Math.cos(rotation)) - ((y - originY) * Math.sin(rotation))) + originX,
+            y: (((x - originX) * Math.sin(rotation)) + ((y - originY) * Math.cos(rotation))) + originY
+        }
+    }
+
     const selectedPathNewCoords = () => {
+        const zeroZero = {x: 0, y: 0};
+        // let output = {
+        //     leftTop: zeroZero,
+        //     rightTop: zeroZero,
+        //     leftBottom: zeroZero,
+        //     rightBottom: zeroZero
+        // }
         let output = {
             left: 0,
             top: 0,
@@ -191,17 +205,31 @@ const DrawingCanvas: React.FC = () => {
             bottom: 0
         }
         if (!selectedPath.get) return output;
-        const originX = ((selectedPath.get.right - selectedPath.get.left) / 2);
-        const originY = ((selectedPath.get.bottom - selectedPath.get.top) / 2);
+        const originX = selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2);
+        const originY = selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2);
         const rotation = degreesInRadians(selectedPath.get.rotation);
 
-        // For some reason, no matter where the shape is, the resulting top/left/right/bottom values are always in the same place
+        const leftTop = getTranslatedPoints(selectedPath.get.left, selectedPath.get.top, rotation, originX, originY);
+        const rightTop = getTranslatedPoints(selectedPath.get.right, selectedPath.get.top, rotation, originX, originY);
+        const leftBottom = getTranslatedPoints(selectedPath.get.left, selectedPath.get.bottom, rotation, originX, originY);
+        const rightBottom = getTranslatedPoints(selectedPath.get.right, selectedPath.get.bottom, rotation, originX, originY);
 
-        output.left = ((selectedPath.get.left - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.left;
-        output.right = ((selectedPath.get.right - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.right;
-        output.top = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.top - originY) * Math.cos(rotation)) + selectedPath.get.top;
-        output.bottom = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.bottom - originY) * Math.cos(rotation)) + selectedPath.get.bottom;
+        // return {
+        //     leftTop, rightTop, leftBottom, rightBottom
+        // }
 
+        // output.left = ((selectedPath.get.left - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.left;
+        // output.right = ((selectedPath.get.right - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.right;
+        // output.top = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.top - originY) * Math.cos(rotation)) + selectedPath.get.top;
+        // output.bottom = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.bottom - originY) * Math.cos(rotation)) + selectedPath.get.bottom;
+
+        //console.log({leftTop, rightTop, leftBottom, rightBottom});
+
+        output.left = leftTop.x;
+        output.right = rightTop.x;
+        output.bottom = leftBottom.y;
+        output.top = leftTop.y;
+        
         //console.log({output});
         return output;
     }
@@ -233,12 +261,11 @@ const DrawingCanvas: React.FC = () => {
                             translateY={selectedPath.get.translateY}
                         >
                             <Rect 
-                                x={selectedCoords.left} 
-                                y={selectedCoords.top} 
-                                width={selectedCoords.right - selectedCoords.left} 
-                                height={selectedCoords.bottom - selectedCoords.top} 
-                                stroke="red" 
-                                strokeWidth="4"
+                                x={selectedCoords.left - 2}
+                                y={selectedCoords.top - 2}
+                                width={selectedCoords.right - selectedCoords.left + 4}
+                                height={selectedCoords.bottom - selectedCoords.top + 4}
+                                stroke="red" strokeWidth="4"
                             ></Rect>
                         </G>
                         <G 
