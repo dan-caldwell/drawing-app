@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from 'react';
+import React, { useRef, useContext, useMemo } from 'react';
 import { GestureResponderEvent, StyleSheet, Animated } from 'react-native';
 import Svg, { G, Polyline, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
@@ -14,7 +14,7 @@ const DrawingCanvas: React.FC = () => {
     const { paths, activeTool, openSubmenu, strokeWidth, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
-    const { setCurrentPathBoundaries, updateSelectionAfterRelease } = useSelection();
+    const { setCurrentPathBoundaries, updateSelectionAfterRelease, rotateSelection } = useSelection();
 
     const startRef = useRef<StartPoints>({x: null, y: null});
     const moveRef = useRef(false);
@@ -97,18 +97,7 @@ const DrawingCanvas: React.FC = () => {
         const y = e.nativeEvent.locationY;
 
         if (rotationRef.current) {
-            
-            if (!selectedPath.get) return;
-            // There is a selected path, so rotate the path
-            paths.set(oldPaths => {
-                const newPaths = clone(oldPaths);
-                const selected = newPaths.find(item => item.id === selectedPath.get?.id);
-                if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
-                const yDiff = startRef.current.y - y;
-                selected.rotation = yDiff;
-                selectedPath.set(selected);
-                return newPaths;
-            });
+            rotateSelection(y, startRef);
             return;
         }
 
@@ -192,17 +181,11 @@ const DrawingCanvas: React.FC = () => {
 
     const selectedPathNewCoords = () => {
         const zeroZero = {x: 0, y: 0};
-        // let output = {
-        //     leftTop: zeroZero,
-        //     rightTop: zeroZero,
-        //     leftBottom: zeroZero,
-        //     rightBottom: zeroZero
-        // }
         let output = {
-            left: 0,
-            top: 0,
-            right: 0,
-            bottom: 0
+            minSelectedX: 0,
+            minSelectedY: 0,
+            maxSelectedX: 0,
+            maxSelectedY: 0
         }
         if (!selectedPath.get) return output;
         const originX = selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2);
@@ -214,27 +197,21 @@ const DrawingCanvas: React.FC = () => {
         const leftBottom = getTranslatedPoints(selectedPath.get.left, selectedPath.get.bottom, rotation, originX, originY);
         const rightBottom = getTranslatedPoints(selectedPath.get.right, selectedPath.get.bottom, rotation, originX, originY);
 
-        // return {
-        //     leftTop, rightTop, leftBottom, rightBottom
-        // }
+        const minSelectedX = Math.min(leftTop.x, leftBottom.x, rightTop.x, rightBottom.x);
+        const minSelectedY = Math.min(leftTop.y, leftBottom.y, rightTop.y, rightBottom.y);
+        const maxSelectedX = Math.max(leftTop.x, leftBottom.x, rightTop.x, rightBottom.x);
+        const maxSelectedY = Math.max(leftTop.y, leftBottom.y, rightTop.y, rightBottom.y);
 
-        // output.left = ((selectedPath.get.left - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.left;
-        // output.right = ((selectedPath.get.right - originX) * Math.cos(rotation)) - ((selectedPath.get.top - originY) * Math.sin(rotation)) + selectedPath.get.right;
-        // output.top = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.top - originY) * Math.cos(rotation)) + selectedPath.get.top;
-        // output.bottom = ((selectedPath.get.left - originX) * Math.sin(rotation)) + ((selectedPath.get.bottom - originY) * Math.cos(rotation)) + selectedPath.get.bottom;
-
-        //console.log({leftTop, rightTop, leftBottom, rightBottom});
-
-        output.left = leftTop.x;
-        output.right = rightTop.x;
-        output.bottom = leftBottom.y;
-        output.top = leftTop.y;
+        console.log('computing selectedPathNewCoords', new Date());
         
-        //console.log({output});
-        return output;
+        return { minSelectedX, minSelectedY, maxSelectedX, maxSelectedY }
     }
 
-    const selectedCoords = selectedPathNewCoords();
+    // These values will get computed each time selectedPath changes
+    const { minSelectedX, minSelectedY, maxSelectedX, maxSelectedY } = useMemo(() => selectedPathNewCoords(), [selectedPath]);
+
+
+    //console.log(selectedPath.get);
 
     return (
         <Animated.View
@@ -261,10 +238,10 @@ const DrawingCanvas: React.FC = () => {
                             translateY={selectedPath.get.translateY}
                         >
                             <Rect 
-                                x={selectedCoords.left - 2}
-                                y={selectedCoords.top - 2}
-                                width={selectedCoords.right - selectedCoords.left + 4}
-                                height={selectedCoords.bottom - selectedCoords.top + 4}
+                                x={minSelectedX - 2}
+                                y={maxSelectedY + 2}
+                                width={maxSelectedX - minSelectedX + 4}
+                                height={minSelectedY - maxSelectedY - 4}
                                 stroke="red" strokeWidth="4"
                             ></Rect>
                         </G>

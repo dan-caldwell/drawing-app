@@ -1,6 +1,7 @@
 import { DrawingContext } from "drawing-app/components/context/DrawingContext";
 import { useContext } from "react";
 import clone from 'clone';
+import { StartPoints } from "drawing-app/types";
 
 
 const useSelection = () => {
@@ -71,7 +72,21 @@ const useSelection = () => {
         });
     }
 
-    return { setCurrentPathBoundaries, updateSelectionAfterRelease };
+    const rotateSelection = (y: number, startRef: React.MutableRefObject<StartPoints>) => {
+        if (!selectedPath.get) return;
+            // There is a selected path, so rotate the path
+            paths.set(oldPaths => {
+                const newPaths = clone(oldPaths);
+                const selected = newPaths.find(item => item.id === selectedPath.get?.id);
+                if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
+                const yDiff = startRef.current.y - y;
+                selected.rotation = yDiff;
+                selectedPath.set(selected);
+                return newPaths;
+            });
+    }
+
+    return { setCurrentPathBoundaries, updateSelectionAfterRelease, rotateSelection };
 
 }
 
