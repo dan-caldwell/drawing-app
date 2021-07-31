@@ -202,7 +202,7 @@ const DrawingCanvas: React.FC = () => {
         const maxSelectedX = Math.max(leftTop.x, leftBottom.x, rightTop.x, rightBottom.x);
         const maxSelectedY = Math.max(leftTop.y, leftBottom.y, rightTop.y, rightBottom.y);
 
-        console.log('computing selectedPathNewCoords', new Date());
+        //console.log('computing selectedPathNewCoords', new Date());
         
         return { minSelectedX, minSelectedY, maxSelectedX, maxSelectedY }
     }
