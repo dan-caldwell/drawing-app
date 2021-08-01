@@ -127,7 +127,11 @@ const useSelection = () => {
                 const p1 = {x: startRef.current.x, y: startRef.current.y};
                 const c = {x: originX, y: originY};
                 const rotation = getRotationAngle(p0, p1, c);
-                selected.rotation = rotation * (180 / Math.PI);
+                selected.rotation = selected.rotation + rotation;
+                // Problems
+                // Rotation speed
+                // There is rotation acceleration when the rotation should really be linear
+                // Does not rotate based on where x,y is -> it will always rotate in one direction since the new rotation is being added to the old rotation
                 selectedPath.set(selected);
                 return newPaths;
             });
