@@ -57,7 +57,7 @@ export type SvgPath = {
   rotation: number
 }
 
-export type StartPoints = {
+export type CanvasPoint = {
   x: number | null,
   y: number | null
 }

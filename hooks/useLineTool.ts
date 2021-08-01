@@ -2,14 +2,14 @@ import { useContext } from 'react';
 import { GestureResponderEvent } from "react-native";
 import clone from 'clone';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
-import { StartPoints, SvgPath } from '@types';
+import { CanvasPoint, SvgPath } from '@types';
 
 interface Move {
     e: GestureResponderEvent,
     paths: SvgPath[],
     x: number,
     y: number,
-    startRef: React.MutableRefObject<StartPoints>,
+    startRef: React.MutableRefObject<CanvasPoint>,
     lineContinuationRef: React.MutableRefObject<number>
 }
 

@@ -1,11 +1,11 @@
 import React, { useRef, useContext, useMemo } from 'react';
 import { GestureResponderEvent, StyleSheet, Animated } from 'react-native';
-import Svg, { G, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, G, Polyline, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
-import { StartPoints, SvgPath } from 'drawing-app/types';
+import { CanvasPoint, SvgPath } from 'drawing-app/types';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 import useSelection from 'drawing-app/hooks/useSelection';
@@ -14,9 +14,9 @@ const DrawingCanvas: React.FC = () => {
     const { paths, activeTool, openSubmenu, strokeWidth, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
-    const { setCurrentPathBoundaries, updateSelectionAfterRelease, rotateSelection } = useSelection();
+    const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection } = useSelection();
 
-    const startRef = useRef<StartPoints>({x: null, y: null});
+    const startRef = useRef<CanvasPoint>({x: null, y: null});
     const moveRef = useRef(false);
     const rotationRef = useRef(false);
     const lineContinuationRef = useRef(0);
@@ -68,7 +68,6 @@ const DrawingCanvas: React.FC = () => {
                 if (selectedPath.get) {
                     // Determine if selection is in rotation square
                     if (x >= selectedPath.get.left - 20 && x <= selectedPath.get.left && y >= selectedPath.get.top - 20 && y <= selectedPath.get.top) {
-                        console.log('rotation square selected');
                         rotationRef.current = true;
                         return;
                     }
@@ -97,7 +96,7 @@ const DrawingCanvas: React.FC = () => {
         const y = e.nativeEvent.locationY;
 
         if (rotationRef.current) {
-            rotateSelection(y, startRef);
+            rotateSelection(x, y, startRef);
             return;
         }
 
@@ -118,18 +117,8 @@ const DrawingCanvas: React.FC = () => {
                 }
                 break;
             case tools.select:
-                if (!selectedPath.get) return;
-                // There is a selected path, so translate the path
-                paths.set(oldPaths => {
-                    const newPaths = clone(oldPaths);
-                    const selected = newPaths.find(item => item.id === selectedPath.get?.id);
-                    if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
-                    selected.translateX = x - startRef.current.x;
-                    selected.translateY = y - startRef.current.y;
-                    selectedPath.set(selected);
-                    return newPaths;
-                });
-                return;
+                translateSelection(startRef, x, y);
+                break;
         }
     }
 
@@ -141,8 +130,11 @@ const DrawingCanvas: React.FC = () => {
         switch (activeTool.get) {
             case tools.select:
                 if (selectedPath.get) {
-                    updateSelectionAfterRelease();
-                    return;
+                    if (moveRef.current) {
+                        updateSelectionTranslateAfterRelease();
+                    } else if (rotationRef.current) {
+                        updateSelectionRotateAfterRelease();
+                    }
                 }
                 break;
             case tools.brush:
@@ -156,6 +148,8 @@ const DrawingCanvas: React.FC = () => {
                 }
                 break;
         }
+
+        rotationRef.current = false;
     }
 
     const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
@@ -168,50 +162,6 @@ const DrawingCanvas: React.FC = () => {
         }
     }
 
-    const degreesInRadians = (rotation: number) => {
-        return rotation * (Math.PI / 180);
-    }
-
-    const getTranslatedPoints = (x: number, y: number, rotation: number, originX: number, originY: number) => {
-        return {
-            x: (((x - originX) * Math.cos(rotation)) - ((y - originY) * Math.sin(rotation))) + originX,
-            y: (((x - originX) * Math.sin(rotation)) + ((y - originY) * Math.cos(rotation))) + originY
-        }
-    }
-
-    const selectedPathNewCoords = () => {
-        const zeroZero = {x: 0, y: 0};
-        let output = {
-            minSelectedX: 0,
-            minSelectedY: 0,
-            maxSelectedX: 0,
-            maxSelectedY: 0
-        }
-        if (!selectedPath.get) return output;
-        const originX = selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2);
-        const originY = selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2);
-        const rotation = degreesInRadians(selectedPath.get.rotation);
-
-        const leftTop = getTranslatedPoints(selectedPath.get.left, selectedPath.get.top, rotation, originX, originY);
-        const rightTop = getTranslatedPoints(selectedPath.get.right, selectedPath.get.top, rotation, originX, originY);
-        const leftBottom = getTranslatedPoints(selectedPath.get.left, selectedPath.get.bottom, rotation, originX, originY);
-        const rightBottom = getTranslatedPoints(selectedPath.get.right, selectedPath.get.bottom, rotation, originX, originY);
-
-        const minSelectedX = Math.min(leftTop.x, leftBottom.x, rightTop.x, rightBottom.x);
-        const minSelectedY = Math.min(leftTop.y, leftBottom.y, rightTop.y, rightBottom.y);
-        const maxSelectedX = Math.max(leftTop.x, leftBottom.x, rightTop.x, rightBottom.x);
-        const maxSelectedY = Math.max(leftTop.y, leftBottom.y, rightTop.y, rightBottom.y);
-
-        //console.log('computing selectedPathNewCoords', new Date());
-        
-        return { minSelectedX, minSelectedY, maxSelectedX, maxSelectedY }
-    }
-
-    // These values will get computed each time selectedPath changes
-    const { minSelectedX, minSelectedY, maxSelectedX, maxSelectedY } = useMemo(() => selectedPathNewCoords(), [selectedPath]);
-
-
-    //console.log(selectedPath.get);
 
     return (
         <Animated.View
@@ -233,22 +183,9 @@ const DrawingCanvas: React.FC = () => {
                             translateX={selectedPath.get.translateX}
                             translateY={selectedPath.get.translateY}
                         ></Rect>
-                        <G
-                            translateX={selectedPath.get.translateX}
-                            translateY={selectedPath.get.translateY}
-                        >
-                            <Rect 
-                                x={minSelectedX - 2}
-                                y={maxSelectedY + 2}
-                                width={maxSelectedX - minSelectedX + 4}
-                                height={minSelectedY - maxSelectedY - 4}
-                                stroke="red" strokeWidth="4"
-                            ></Rect>
-                        </G>
                         <G 
                             translateX={selectedPath.get.translateX}
                             translateY={selectedPath.get.translateY}
-                            rotation={selectedPath.get.rotation}
                             originX={selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2)}
                             originY={selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2)}
                         >
@@ -262,6 +199,14 @@ const DrawingCanvas: React.FC = () => {
                         </G>
                     </>
                 }
+                {(rotationRef.current && selectedPath.get) &&
+                    <Circle 
+                        r={selectedPath.get.right - selectedPath.get.left} 
+                        stroke="red" 
+                        strokeWidth="4" 
+                        x={selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2)} 
+                        y={selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2)}></Circle>
+                }
                 {paths.get.map(path => (
                     <G
                         key={path.id}
@@ -272,6 +217,7 @@ const DrawingCanvas: React.FC = () => {
                         originY={path.top + ((path.bottom - path.top) / 2)}
                     >
                         <Polyline 
+                        
                             onResponderGrant={(e: GestureResponderEvent) => handleSelectedResponderGrant(e, path)}
                             onPress={activeTool.get === tools.select && selectedPath.get?.id !== path.id ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} 
                             stroke="black"

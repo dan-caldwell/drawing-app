@@ -15,8 +15,9 @@
 [√] Get updated top/left/bottom/right points after moving a path
 [√] Path jumps around when you try to move it
 [√] Can't select line paths
+[√] After rotating (via transform), actually move the points of the selectedPath to the new location they should be (via the getTranslatedPoints function)
+[√] Get new right and bottom values on rotation (to properly set width and height for rotation box)
 [ ] Rotate selection
-[ ] After rotating (via transform), actually move the points of the selectedPath to the new location they should be (via the getTranslatedPoints function)
-[ ] Get new right and bottom values on rotation (to properly set width and height for rotation box)
+[ ] Circular rotation (instead of just based on y change)
 [ ] Eraser mode and the ability to select shapes
 [ ] Enable de-selecting of selection

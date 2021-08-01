@@ -7,29 +7,49 @@ import { ICON_MARGIN } from 'drawing-app/constants/Layout';
 
 interface Props {
     text?: string,
-    onPress?: () => void,
+    onPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
     onLongPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
     active?: boolean,
     children?: JSX.Element | React.FC,
     style?: object[] | object,
-    icon?: any
+    icon?: any,
+    openSubmenuOnPress?: boolean
 }
 
-const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress}) => {
+const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress, openSubmenuOnPress = false}) => {
     const buttonRef = useRef<View>(null);
 
     const handleLongPress = async (e: GestureResponderEvent) => {
         if (!buttonRef.current) return;
         const measurement = await measureComponent(buttonRef.current);
-        if (!onLongPress) return;
+        if (!onLongPress || typeof onLongPress !== 'function') return;
         onLongPress(e, measurement, icon);
+    }
+
+    const handlePress = async (e: GestureResponderEvent) => {
+        if (!onPress || typeof onPress !== 'function') return;
+        if (openSubmenuOnPress) {
+            if (!buttonRef.current) return;
+            const measurement = await measureComponent(buttonRef.current);
+            onPress(e, measurement, icon);
+            return;
+        }
+        const measurement = {
+            height: 0,
+            width: 0,
+            pageX: 0,
+            pageY: 0,
+            x: 0,
+            y: 0
+        }
+        onPress(e, measurement, '');
     }
 
     return (
         <View style={styles.container} ref={buttonRef}>
             <TouchableOpacity 
                 style={[styles.button, active ? styles.active : null, style || null]} 
-                onPress={onPress} 
+                onPress={handlePress} 
                 onLongPress={handleLongPress} 
             >
                 {icon && <MaterialCommunityIcons name={icon} size={24} color="black"/>}

@@ -59,6 +59,7 @@ const DrawingSettingsNavMenu: React.FC = () => {
                 active={false}
                 onPress={handleNavButtonPress}
                 icon="cog"
+                openSubmenuOnPress={true}
             />
         </>
     )
