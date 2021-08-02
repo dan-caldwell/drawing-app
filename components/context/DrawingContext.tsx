@@ -13,6 +13,7 @@ interface ContextProps {
     openSubmenu: ContextState<OpenSubmenu>,
     autoJoin: ContextState<AutoJoin>,
     strokeWidth: ContextState<number>,
+    strokeColor: ContextState<string>,
     fill: ContextState<string>,
     selectedPath: ContextState<SvgPath | null>,
     resetOpenSubmenu: () => void,
@@ -22,7 +23,8 @@ interface ContextProps {
         select: string,
         brush: string,
         line: string,
-        reset: string
+        reset: string,
+        erase: string
     }
 }
 
@@ -31,7 +33,8 @@ const tools = {
     select: "cursor-default",
     brush: "brush",
     line: "vector-line",
-    reset: "backup-restore"
+    reset: "backup-restore",
+    erase: "eraser"
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
@@ -53,6 +56,7 @@ const DrawingProvider: React.FC = ({children}) => {
     });
     const strokeWidth = useContextState<number>(10);
     const fill = useContextState<string>('');
+    const strokeColor = useContextState<string>('#000');
     const selectedPath = useContextState<SvgPath | null>(null);
 
     const resetOpenSubmenu = () => {
@@ -73,6 +77,7 @@ const DrawingProvider: React.FC = ({children}) => {
             resetOpenSubmenu,
             autoJoin,
             strokeWidth,
+            strokeColor,
             fill,
             selectedPath,
             activeDrawTool,

@@ -17,7 +17,12 @@
 [√] Can't select line paths
 [√] After rotating (via transform), actually move the points of the selectedPath to the new location they should be (via the getTranslatedPoints function)
 [√] Get new right and bottom values on rotation (to properly set width and height for rotation box)
-[ ] Rotate selection
-[ ] Circular rotation (instead of just based on y change)
-[ ] Eraser mode and the ability to select shapes
-[ ] Enable de-selecting of selection
+[√] Circular rotation (instead of just based on y change)
+[√] Rotate selection
+[√] Enable de-selecting of selection
+[ ] Eraser mode (find shapes where x,y is inside the bounding box, then filter the coords based on if the x,y coords are close to them (close = delete the points in the shape))
+[ ] Undo tool
+[ ] Select and delete path
+[ ] Ability to change canvas size
+[ ] Ability to save image
+[ ] Ability to save project

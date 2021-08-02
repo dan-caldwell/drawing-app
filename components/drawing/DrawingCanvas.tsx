@@ -11,10 +11,10 @@ import { v4 as uuid } from 'uuid';
 import useSelection from 'drawing-app/hooks/useSelection';
 
 const DrawingCanvas: React.FC = () => {
-    const { paths, activeTool, openSubmenu, strokeWidth, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
+    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
-    const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection } = useSelection();
+    const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
 
     const startRef = useRef<CanvasPoint>({x: null, y: null});
     const moveRef = useRef(false);
@@ -25,6 +25,7 @@ const DrawingCanvas: React.FC = () => {
         const pathData: SvgPath = {
             points: `${x},${y} `,
             strokeWidth: strokeWidth.get,
+            stroke: strokeColor.get,
             fill: fill.get,
             id: uuid(),
             left: x,
@@ -73,9 +74,7 @@ const DrawingCanvas: React.FC = () => {
                     }
 
                     // Determine if selection is outside of the selected rectangle area
-                    if (!(x >= selectedPath.get.left && x <= selectedPath.get.right && y >= selectedPath.get.top && y <= selectedPath.get.bottom)) {
-                        selectedPath.set(null);
-                    }
+                    if (selectedOutside(x, y)) selectedPath.set(null);
                     return;
                 }
                 break;
@@ -86,7 +85,10 @@ const DrawingCanvas: React.FC = () => {
                 lineContinuationRef.current = determineIfLineContinuation(paths.get, x, y, lineContinuationRef);
                 if (lineContinuationRef.current === 1) return;
                 createInitialPoint(x, y);
-                break;   
+                break;
+            case tools.erase:
+                //console.log('erase');
+                break;
         }
         if (openSubmenu.get.open) resetOpenSubmenu();
     }
@@ -118,6 +120,42 @@ const DrawingCanvas: React.FC = () => {
                 break;
             case tools.select:
                 translateSelection(startRef, x, y);
+                break;
+            case tools.erase:
+                // Make a useEraser hook for these functions
+                // Get the shapes that are within the bounds of x,y
+                paths.set(oldPaths => {
+                    const newPaths = clone(oldPaths);
+                    const pathsWithinBounds = newPaths.filter(path => x >= path.left && x <= path.right && y >= path.top && y <= path.bottom);
+                    pathsWithinBounds.forEach(path => {
+                        const splitPoints = path.points.trim().split(' ');
+                        let closePoints: number[] = [];
+                        splitPoints.forEach((point, index) => {
+                            const pointXY = point.split(',');
+                            const pointX = Number(pointXY[0]);
+                            const pointY = Number(pointXY[1]);
+                            // Check if the points on the path are within two units from the x,y value
+                            // Add the index to the close points array if they are
+                            if (Math.abs(x - pointX) <= 2 && Math.abs(y - pointY) <= 2) {
+                                closePoints.push(index);
+                            }
+                        });
+                        const filteredPoints = splitPoints.filter((item, index) => !closePoints.includes(index));
+                        const newPointsString = filteredPoints.join(' ');
+                        // Find the path in newPaths to directly modify the newPaths array
+                        const foundPath = newPaths.find(item => item.id === path.id);
+                        
+                        // This will create a simplified polyline by deleting the points but will not create cross sections/split the path
+                        // So probably need to re-do this entire function
+                        // Or split the polylines?
+                        if (foundPath) {
+                            foundPath.points = newPointsString;
+                        }
+                    });
+                    return newPaths;
+                })
+
+                //console.log(x, y);
                 break;
         }
     }
@@ -199,14 +237,6 @@ const DrawingCanvas: React.FC = () => {
                         </G>
                     </>
                 }
-                {(rotationRef.current && selectedPath.get) &&
-                    <Circle 
-                        r={selectedPath.get.right - selectedPath.get.left} 
-                        stroke="red" 
-                        strokeWidth="4" 
-                        x={selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2)} 
-                        y={selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2)}></Circle>
-                }
                 {paths.get.map(path => (
                     <G
                         key={path.id}
@@ -217,10 +247,9 @@ const DrawingCanvas: React.FC = () => {
                         originY={path.top + ((path.bottom - path.top) / 2)}
                     >
                         <Polyline 
-                        
                             onResponderGrant={(e: GestureResponderEvent) => handleSelectedResponderGrant(e, path)}
                             onPress={activeTool.get === tools.select && selectedPath.get?.id !== path.id ? (e: GestureResponderEvent) => handleSelectPath(e, path) : undefined} 
-                            stroke="black"
+                            stroke={path.stroke}
                             fill={path.fill || undefined}
                             strokeWidth={path.strokeWidth} 
                             points={path.points} 

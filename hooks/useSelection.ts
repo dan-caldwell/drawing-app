@@ -90,28 +90,14 @@ const useSelection = () => {
         });
     }
 
-    const degreesInRadians = (rotation: number) => {
-        return rotation * (Math.PI / 180);
-    }
+    const radians = (degrees: number) => degrees * (Math.PI / 180);
+    const degrees = (radians: number) => radians * (180 / Math.PI);
 
     const getTranslatedPoints = (x: number, y: number, rotation: number, originX: number, originY: number) => {
         return {
             x: (((x - originX) * Math.cos(rotation)) - ((y - originY) * Math.sin(rotation))) + originX,
             y: (((x - originX) * Math.sin(rotation)) + ((y - originY) * Math.cos(rotation))) + originY
         }
-    }
-
-    // Will calculate the correct rotation angle given two points
-    // Used for rotating the selection around the center point of a shape
-    const getRotationAngle = (p0: CanvasPoint, p1: CanvasPoint, centerPoint: CanvasPoint) => {
-        if (!p0.x || !p0.y || !p1.x || !p1.y || !centerPoint.x || !centerPoint.y) return 0;
-        var p0c = Math.sqrt(Math.pow(centerPoint.x-p0.x,2)+
-                            Math.pow(centerPoint.y-p0.y,2)); // p0->centerPoint (b)   
-        var p1c = Math.sqrt(Math.pow(centerPoint.x-p1.x,2)+
-                            Math.pow(centerPoint.y-p1.y,2)); // p1->centerPoint (a)
-        var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2)+
-                             Math.pow(p1.y-p0.y,2)); // p0->p1 (centerPoint)
-        return Math.acos((p1c * p1c + p0c * p0c - p0p1 * p0p1)/(2 * p1c * p0c));
     }
 
     const rotateSelection = (x: number, y: number, startRef: React.MutableRefObject<CanvasPoint>) => {
@@ -121,17 +107,15 @@ const useSelection = () => {
                 const newPaths = clone(oldPaths);
                 const selected = newPaths.find(item => item.id === selectedPath.get?.id);
                 if (!selected || !startRef.current.x || !startRef.current.y) return newPaths;
+                // Get the origin point
                 const originX = selected.left + ((selected.right - selected.left) / 2);
                 const originY = selected.top + ((selected.bottom - selected.top) / 2);
-                const p0 = {x, y};
-                const p1 = {x: startRef.current.x, y: startRef.current.y};
-                const c = {x: originX, y: originY};
-                const rotation = getRotationAngle(p0, p1, c);
-                selected.rotation = selected.rotation + rotation;
-                // Problems
-                // Rotation speed
-                // There is rotation acceleration when the rotation should really be linear
-                // Does not rotate based on where x,y is -> it will always rotate in one direction since the new rotation is being added to the old rotation
+                // Get the angle from the current x,y pointer values
+                const angle = Math.atan2(y - originY, x - originX);
+                // Get the angle from the start pointer values
+                const startAngle = Math.atan2(startRef.current.y - originY, startRef.current.x - originX);
+                // Get difference between angles, then convert to degrees
+                selected.rotation = degrees(angle - startAngle);
                 selectedPath.set(selected);
                 return newPaths;
             });
@@ -139,7 +123,7 @@ const useSelection = () => {
 
     const updateSelectionRotateAfterRelease = () => {
         if (!selectedPath.get) return;
-        const rotation = degreesInRadians(selectedPath.get.rotation);
+        const rotation = radians(selectedPath.get.rotation);
         const originX = selectedPath.get.left + ((selectedPath.get.right - selectedPath.get.left) / 2);
         const originY = selectedPath.get.top + ((selectedPath.get.bottom - selectedPath.get.top) / 2);
         // There is a selected path, so translate the points to the new location of the rotation transformation
@@ -173,13 +157,20 @@ const useSelection = () => {
             return newPaths;
         });
     }
+    
+    // Determine if selection is outside of the selected rectangle area
+    const selectedOutside = (x: number, y: number) => {
+        if (!selectedPath.get) return false;
+        return !(x >= selectedPath.get.left && x <= selectedPath.get.right && y >= selectedPath.get.top && y <= selectedPath.get.bottom);
+    }
 
     return { 
         setCurrentPathBoundaries, 
         updateSelectionTranslateAfterRelease, 
         updateSelectionRotateAfterRelease, 
         rotateSelection,
-        translateSelection
+        translateSelection,
+        selectedOutside
     };
 
 }

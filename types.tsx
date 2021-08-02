@@ -45,6 +45,7 @@ export type AutoJoin = {
 
 export type SvgPath = {
   points: string,
+  stroke: string,
   strokeWidth: number,
   fill: string
   id: string,

@@ -14,11 +14,18 @@ type Tool = {
 
 const ToolNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { tools, activeTool, activeDrawTool } = useContext(DrawingContext);
+    const { tools, activeTool, activeDrawTool, strokeColor } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu, handleSubmenuButtonPress } = useNavMenu(submenuRef);
 
     const handlePress = (tool: string) => {
         handleSubmenuButtonPress(() => activeTool.set(tool));
+        if (tool === tools.erase) {
+            // If eraser tool is pressed, change the drawing stroke color
+            strokeColor.set('#fff');
+        } else {
+            // This should be reset to the previous stroke color rather than just black
+            strokeColor.set('#000');
+        }
         activeDrawTool.set(tool);
     }
 
@@ -31,6 +38,10 @@ const ToolNavMenu: React.FC = () => {
             tool: tools.line,
             text: "Line"
         },
+        {
+            tool: tools.erase,
+            text: "Erase"
+        }
     ]
 
     const acceptableTargets: string[] | null[] = acceptableTools.map(item => item.tool);
