@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext } from "react";
 import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
 import useContextState from 'drawing-app/hooks/useContextState';
 

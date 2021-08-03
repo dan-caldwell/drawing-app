@@ -170,7 +170,8 @@ const useSelection = () => {
         updateSelectionRotateAfterRelease, 
         rotateSelection,
         translateSelection,
-        selectedOutside
+        selectedOutside,
+        getPathBoundingBox
     };
 
 }

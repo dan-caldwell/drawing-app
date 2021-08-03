@@ -55,7 +55,8 @@ export type SvgPath = {
   bottom: number,
   translateX: number,
   translateY: number,
-  rotation: number
+  rotation: number,
+  type: string
 }
 
 export type CanvasPoint = {

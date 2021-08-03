@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useMemo } from 'react';
+import React, { useRef, useContext, useState } from 'react';
 import { GestureResponderEvent, StyleSheet, Animated } from 'react-native';
 import Svg, { Circle, G, Polyline, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
@@ -6,22 +6,26 @@ import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
 import { CanvasPoint, SvgPath } from 'drawing-app/types';
+import useSelection from 'drawing-app/hooks/useSelection';
+import useEraser from 'drawing-app/hooks/useEraser';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
-import useSelection from 'drawing-app/hooks/useSelection';
 
 const DrawingCanvas: React.FC = () => {
     const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
     const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
+    const { eraseClosePoints } = useEraser();
 
     const startRef = useRef<CanvasPoint>({x: null, y: null});
     const moveRef = useRef(false);
     const rotationRef = useRef(false);
     const lineContinuationRef = useRef(0);
+    const [eraserPoint, setEraserPoint] = useState<CanvasPoint>({x: null, y: null});
 
     const createInitialPoint = (x: number, y: number) => {
+        if (!activeTool.get) return;
         const pathData: SvgPath = {
             points: `${x},${y} `,
             strokeWidth: strokeWidth.get,
@@ -34,7 +38,8 @@ const DrawingCanvas: React.FC = () => {
             bottom: y,
             translateX: 0,
             translateY: 0,
-            rotation: 0
+            rotation: 0,
+            type: activeTool.get
         };
         paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
@@ -87,7 +92,7 @@ const DrawingCanvas: React.FC = () => {
                 createInitialPoint(x, y);
                 break;
             case tools.erase:
-                //console.log('erase');
+                setEraserPoint({x, y});
                 break;
         }
         if (openSubmenu.get.open) resetOpenSubmenu();
@@ -122,40 +127,8 @@ const DrawingCanvas: React.FC = () => {
                 translateSelection(startRef, x, y);
                 break;
             case tools.erase:
-                // Make a useEraser hook for these functions
-                // Get the shapes that are within the bounds of x,y
-                paths.set(oldPaths => {
-                    const newPaths = clone(oldPaths);
-                    const pathsWithinBounds = newPaths.filter(path => x >= path.left && x <= path.right && y >= path.top && y <= path.bottom);
-                    pathsWithinBounds.forEach(path => {
-                        const splitPoints = path.points.trim().split(' ');
-                        let closePoints: number[] = [];
-                        splitPoints.forEach((point, index) => {
-                            const pointXY = point.split(',');
-                            const pointX = Number(pointXY[0]);
-                            const pointY = Number(pointXY[1]);
-                            // Check if the points on the path are within two units from the x,y value
-                            // Add the index to the close points array if they are
-                            if (Math.abs(x - pointX) <= 2 && Math.abs(y - pointY) <= 2) {
-                                closePoints.push(index);
-                            }
-                        });
-                        const filteredPoints = splitPoints.filter((item, index) => !closePoints.includes(index));
-                        const newPointsString = filteredPoints.join(' ');
-                        // Find the path in newPaths to directly modify the newPaths array
-                        const foundPath = newPaths.find(item => item.id === path.id);
-                        
-                        // This will create a simplified polyline by deleting the points but will not create cross sections/split the path
-                        // So probably need to re-do this entire function
-                        // Or split the polylines?
-                        if (foundPath) {
-                            foundPath.points = newPointsString;
-                        }
-                    });
-                    return newPaths;
-                })
-
-                //console.log(x, y);
+                eraseClosePoints(x, y);
+                setEraserPoint({x, y});
                 break;
         }
     }
@@ -184,6 +157,9 @@ const DrawingCanvas: React.FC = () => {
                     // Creates a dot
                     createDot(x, y);
                 }
+                break;
+            case tools.erase:
+                setEraserPoint({x: null, y: null});
                 break;
         }
 
@@ -236,6 +212,15 @@ const DrawingCanvas: React.FC = () => {
                             ></Rect>
                         </G>
                     </>
+                }
+                {activeTool.get === tools.erase && eraserPoint.x && eraserPoint.y &&
+                    <Circle
+                        stroke="red"
+                        strokeWidth="4"
+                        r="10"
+                        x={eraserPoint.x}
+                        y={eraserPoint.y}
+                    ></Circle>
                 }
                 {paths.get.map(path => (
                     <G

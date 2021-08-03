@@ -20,7 +20,8 @@
 [√] Circular rotation (instead of just based on y change)
 [√] Rotate selection
 [√] Enable de-selecting of selection
-[ ] Eraser mode (find shapes where x,y is inside the bounding box, then filter the coords based on if the x,y coords are close to them (close = delete the points in the shape))
+[√] Eraser mode (find shapes where x,y is inside the bounding box, then filter the coords based on if the x,y coords are close to them (close = delete the points in the shape))
+    [ ] Eraser for lines
 [ ] Undo tool
 [ ] Select and delete path
 [ ] Ability to change canvas size
