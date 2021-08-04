@@ -63,3 +63,10 @@ export type CanvasPoint = {
   x: number | null,
   y: number | null
 }
+
+export type BoundingBox = {
+  top: number,
+  bottom: number,
+  left: number,
+  right: number
+}
