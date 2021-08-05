@@ -68,6 +68,22 @@ const useEraser = () => {
         }
     }
 
+    const pointGroupToBoundingBox = (eraserSize: number, pointGroup: string[]) => {
+        const xVals: number[] = [];
+        const yVals: number[] = [];
+        const splitGroup = pointGroup.map(item => item.split(',').map(num => Number(num)));
+
+        const x1 = splitGroup[0][0];
+        const y1 = splitGroup[0][1];
+        const x2 = splitGroup[1][0];
+        const y2 = splitGroup[1][1];
+
+        const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        const hypotenuse = Math.sqrt(Math.pow(lineLength, 2) + Math.pow(eraserSize, 2));
+
+        return { xVals, yVals }
+    }
+
     const eraseClosePoints = (x: number, y: number) => {
         const eraserSize = 10;
         // Get the shapes that are within the bounds of x,y
@@ -83,8 +99,8 @@ const useEraser = () => {
                     //console.log('line tool', new Date());
                     const groupedPoints = groupPointsByTwo(splitPoints);
                     groupedPoints.forEach(pointGroup => {
-                        const boundingBox = getPointGroupBoundingBox(pointGroup);
-                        //console.log(boundingBox);
+                        const groupNums = pointGroupToBoundingBox(eraserSize, pointGroup);
+                        console.log(groupNums);
                     })
                     return;
                 }
