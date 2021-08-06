@@ -10,23 +10,9 @@ const useEraser = () => {
     const { paths, tools } = useContext(DrawingContext);
     const { getPathBoundingBox } = useSelection();
 
-    // Test if a point is inside a polygon
-    // const pointInPolygon = (numVertices: number, vertX: number[], vertY: number[], testX: number, testY: number) => {
-    //     let i, j, inside = false;
-    //     for (i = 0, j = numVertices - 1; i < numVertices; j = i++) {
-    //         let testInVertY = (vertY[i] > testY) !== (vertY[j] > testY);
-    //         let testXInVert = (testX < (vertX[j] - vertX[i]) * (testY - vertY[i]) / (vertY[j] - vertY[i]) + vertX[i]);
-    //         if (testInVertY && testXInVert) inside = !inside;
-    //     }
-    //     return inside;
-    // }
-
     // NEW function to test if points are inside of a polygon
-    // TODO: test this function
+    // TODO: Sometimes doesn't work
     function pointInPolygon(point: number[], vs: number[][]) {
-        // ray-casting algorithm based on
-        // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
-        
         var x = point[0], y = point[1];
         
         var inside = false;
@@ -41,17 +27,6 @@ const useEraser = () => {
         
         return inside;
     };
-
-    // function pnpoly( nvert, vertx, verty, testx, testy ) {
-    //     var i, j, c = false;
-    //     for( i = 0, j = nvert-1; i < nvert; j = i++ ) {
-    //         if( ( ( verty[i] > testy ) != ( verty[j] > testy ) ) &&
-    //             ( testx < ( vertx[j] - vertx[i] ) * ( testy - verty[i] ) / ( verty[j] - verty[i] ) + vertx[i] ) ) {
-    //                 c = !c;
-    //         }
-    //     }
-    //     return c;
-    // }
 
     const groupPointsByTwo = (splitPoints: any[]): string[][] => {
         return splitPoints.reduce((accumulator, currentValue, currentIndex, array) => {
@@ -72,39 +47,16 @@ const useEraser = () => {
         }, [] as any[]);
     }
 
-    const getPointGroupBoundingBox = (pointGroup: string[]): BoundingBox => {
-        const splitGroup = pointGroup.map(item => item.split(',').map(num => Number(num)));
-        const x1 = splitGroup[0][0];
-        const y1 = splitGroup[0][1];
-        const x2 = splitGroup[1][0];
-        const y2 = splitGroup[1][1];
-
-        // Get the direction of the line (top-to-bottom or bottom-to-top)
-
-        return {
-            top: Math.min(y1, y2),
-            bottom: Math.max(y1, y2),
-            left: Math.min(x1, x2),
-            right: Math.max(x1, x2)
-        }
-    }
-
     const pointGroupToBoundingBox = (eraserSize: number, pointGroup: string[]) => {
-        const xVals: number[] = [];
-        const yVals: number[] = [];
         const splitGroup = pointGroup.map(item => item.split(',').map(num => Number(num)));
         
         const x1 = splitGroup[0][0];
         const y1 = splitGroup[0][1];
         const x2 = splitGroup[1][0];
         const y2 = splitGroup[1][1];
-        
-        xVals.push(x1 + 20, x2 + 20, x1 - 20, x2 - 20);
-        yVals.push(y1 + 20, y2 + 20, y1 - 20, y2 - 20);
-        //const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        //const hypotenuse = Math.sqrt(Math.pow(lineLength, 2) + Math.pow(eraserSize, 2));
 
-        return { xVals, yVals }
+        const polygon = [[x1 + 20, y1 - 20], [x1 - 20, y1 + 20], [x2 + 20, y2 - 20], [x2 - 20, y2 + 20]];
+        return polygon;
     }
 
     const eraseClosePoints = (x: number, y: number) => {
@@ -122,7 +74,11 @@ const useEraser = () => {
                     //console.log('line tool', new Date());
                     const groupedPoints = groupPointsByTwo(splitPoints);
                     groupedPoints.forEach(pointGroup => {
-                        const { xVals, yVals } = pointGroupToBoundingBox(eraserSize, pointGroup);
+                        const polygon = pointGroupToBoundingBox(eraserSize, pointGroup);
+                        const inPolygon = pointInPolygon([x, y], polygon);
+                        if (inPolygon) {
+                            console.log('in polygon', pointGroup, new Date());
+                        }
                         //const inPolygon = pointInPolygon(4, xVals, yVals, x, y);
                         // if (inPolygon) {
                         //     console.log('in polygon', pointGroup, new Date());
