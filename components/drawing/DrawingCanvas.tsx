@@ -12,7 +12,7 @@ import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 
 const DrawingCanvas: React.FC = () => {
-    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu } = useContext(DrawingContext);
+    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
     const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
@@ -186,6 +186,16 @@ const DrawingCanvas: React.FC = () => {
             style={styles.container}
         >
             <Svg style={styles.svg}>
+                {debugPoints.get.length > 0 &&
+                    debugPoints.get.map(points => (
+                        <Polyline
+                            points={points}
+                            strokeWidth="5"
+                            stroke="red"
+                            key={points}
+                        ></Polyline>
+                    ))
+                }
                 {selectedPath.get &&
                     <>
                         <Rect 

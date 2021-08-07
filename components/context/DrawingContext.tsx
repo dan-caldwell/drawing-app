@@ -26,6 +26,7 @@ interface ContextProps {
         reset: string,
         erase: string
     }
+    debugPoints: ContextState<string[]>
 }
 
 const tools = {
@@ -58,6 +59,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const fill = useContextState<string>('');
     const strokeColor = useContextState<string>('#000');
     const selectedPath = useContextState<SvgPath | null>(null);
+    const debugPoints = useContextState<string[]>([]);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({
@@ -81,7 +83,8 @@ const DrawingProvider: React.FC = ({children}) => {
             fill,
             selectedPath,
             activeDrawTool,
-            tools
+            tools,
+            debugPoints
         }}>
             {children}
         </DrawingContext.Provider>

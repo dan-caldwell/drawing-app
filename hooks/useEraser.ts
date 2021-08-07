@@ -7,7 +7,7 @@ import useSelection from './useSelection';
 import { BoundingBox } from '@types';
 
 const useEraser = () => {
-    const { paths, tools } = useContext(DrawingContext);
+    const { paths, tools, debugPoints } = useContext(DrawingContext);
     const { getPathBoundingBox } = useSelection();
 
     // NEW function to test if points are inside of a polygon
@@ -28,8 +28,12 @@ const useEraser = () => {
         return inside;
     };
 
+    // Does not return all points
+    // A four vertex / 5 point line only returns three points
+    // It's because the group should also include the previous point as that is part of the next line
     const groupPointsByTwo = (splitPoints: any[]): string[][] => {
-        return splitPoints.reduce((accumulator, currentValue, currentIndex, array) => {
+        console.log({splitPoints});
+        const output = splitPoints.reduce((accumulator, currentValue, currentIndex, array) => {
             const sliced = array.slice(currentIndex, currentIndex + 2);
             if (currentIndex % 2 === 0) {
                 if (sliced.length === 1) {
@@ -45,6 +49,8 @@ const useEraser = () => {
             }
             return accumulator;
         }, [] as any[]);
+        console.log({output});
+        return output;
     }
 
     const pointGroupToBoundingBox = (eraserSize: number, pointGroup: string[]) => {
@@ -55,13 +61,14 @@ const useEraser = () => {
         const x2 = splitGroup[1][0];
         const y2 = splitGroup[1][1];
 
-        const polygon = [[x1 + 20, y1 - 20], [x1 - 20, y1 + 20], [x2 + 20, y2 - 20], [x2 - 20, y2 + 20]];
+        const polygon = [[x1 + eraserSize, y1 - eraserSize], [x1 - eraserSize, y1 + eraserSize], [x2 - eraserSize, y2 + eraserSize], [x2 + eraserSize, y2 - eraserSize],];
         return polygon;
     }
 
     const eraseClosePoints = (x: number, y: number) => {
         const eraserSize = 10;
         // Get the shapes that are within the bounds of x,y
+
         paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
             const pathsWithinBounds = newPaths.filter(path => x >= path.left - eraserSize && x <= path.right + eraserSize && y >= path.top - eraserSize && y <= path.bottom + eraserSize);
@@ -71,20 +78,24 @@ const useEraser = () => {
                 // If it's a line:
                 // Get the bounding boxes for each line point (which should be a rectangle that goes out eraserSize and is rotated according to the line)
                 if (path.type === tools.line) {
+                    let debugPolygon: string[] = [];
                     //console.log('line tool', new Date());
                     const groupedPoints = groupPointsByTwo(splitPoints);
+                    //console.log(groupedPoints);
                     groupedPoints.forEach(pointGroup => {
                         const polygon = pointGroupToBoundingBox(eraserSize, pointGroup);
                         const inPolygon = pointInPolygon([x, y], polygon);
+                        debugPolygon.push(polygon.map(point => point.join(",")).join(" "));
                         if (inPolygon) {
-                            console.log('in polygon', pointGroup, new Date());
+                            //console.log('in polygon', pointGroup, new Date());
                         }
                         //const inPolygon = pointInPolygon(4, xVals, yVals, x, y);
                         // if (inPolygon) {
                         //     console.log('in polygon', pointGroup, new Date());
                         // }
                         //console.log(pointGroup);
-                    })
+                    });
+                    debugPoints.set(debugPolygon);
                     return;
                 }
 
@@ -137,7 +148,7 @@ const useEraser = () => {
                 }
             });
             return newPaths;
-        })
+        });
     }
 
     return { eraseClosePoints }
