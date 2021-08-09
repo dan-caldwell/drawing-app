@@ -10,22 +10,13 @@ type Tool = {
     text: string
 }
 
-
-
 const ToolNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { tools, activeTool, activeDrawTool, strokeColor } = useContext(DrawingContext);
+    const { tools, activeTool, activeDrawTool, resetOpenSubmenu } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu, handleSubmenuButtonPress } = useNavMenu(submenuRef);
 
     const handlePress = (tool: string) => {
         handleSubmenuButtonPress(() => activeTool.set(tool));
-        if (tool === tools.erase) {
-            // If eraser tool is pressed, change the drawing stroke color
-            strokeColor.set('#fff');
-        } else {
-            // This should be reset to the previous stroke color rather than just black
-            strokeColor.set('#000');
-        }
         activeDrawTool.set(tool);
     }
 
@@ -46,6 +37,11 @@ const ToolNavMenu: React.FC = () => {
 
     const acceptableTargets: string[] | null[] = acceptableTools.map(item => item.tool);
 
+    const handleToolPress = () => {
+        activeTool.set(activeDrawTool.get);
+        if (openSubmenu.get.open) resetOpenSubmenu();
+    }
+
     return (
         <>
             <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && acceptableTargets.includes(openSubmenu.get.target || '')}>
@@ -62,7 +58,7 @@ const ToolNavMenu: React.FC = () => {
             <ToolButton 
                 active={acceptableTargets.includes(activeTool.get || '')}
                 onLongPress={handleNavButtonPress}
-                onPress={() => activeTool.set(activeDrawTool.get)}
+                onPress={handleToolPress}
                 icon={activeDrawTool.get}
             />
         </>

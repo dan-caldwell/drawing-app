@@ -4,15 +4,14 @@ import clone from 'clone';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 import useSelection from './useSelection';
-import { BoundingBox } from '@types';
+import { BoundingBox, SvgPath } from '@types';
 
 const useEraser = () => {
     const { paths, tools, debugPoints } = useContext(DrawingContext);
     const { getPathBoundingBox } = useSelection();
 
-    // NEW function to test if points are inside of a polygon
-    // TODO: Sometimes doesn't work
-    function pointInPolygon(point: number[], vs: number[][]) {
+    // Tests if a point is inside of a polygon
+    const pointInPolygon = (point: number[], vs: number[][]) => {
         var x = point[0], y = point[1];
         
         var inside = false;
@@ -28,28 +27,16 @@ const useEraser = () => {
         return inside;
     };
 
-    // Does not return all points
-    // A four vertex / 5 point line only returns three points
-    // It's because the group should also include the previous point as that is part of the next line
+    // Groups the points into an array of line coordinates
     const groupPointsByTwo = (splitPoints: any[]): string[][] => {
-        console.log({splitPoints});
-        const output = splitPoints.reduce((accumulator, currentValue, currentIndex, array) => {
-            const sliced = array.slice(currentIndex, currentIndex + 2);
-            if (currentIndex % 2 === 0) {
-                if (sliced.length === 1) {
-                    // When at the end of a line, there will only be one point in the sliced array
-                    // So push the previous point to be able to make the bounding box
-                    if (array[currentIndex - 1]) {
-                        sliced.push(array[currentIndex - 1]);
-                    }
-                    accumulator.push(sliced);
-                } else {
-                    accumulator.push(sliced);
-                }
+        const output: string[][] = [];
+
+        splitPoints.forEach((points, index) => {
+            if (splitPoints[index + 1]) {
+                output.push([points, splitPoints[index + 1]]);
             }
-            return accumulator;
-        }, [] as any[]);
-        console.log({output});
+        });
+
         return output;
     }
 
@@ -61,8 +48,91 @@ const useEraser = () => {
         const x2 = splitGroup[1][0];
         const y2 = splitGroup[1][1];
 
-        const polygon = [[x1 + eraserSize, y1 - eraserSize], [x1 - eraserSize, y1 + eraserSize], [x2 - eraserSize, y2 + eraserSize], [x2 + eraserSize, y2 - eraserSize],];
-        return polygon;
+        // Get the line angle in order to determine the correct bounding box to use
+        const lineAngle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+        // Determine the correct direction of the bounding box points based on the line angle
+        // This will make it so the bounding boxes don't have zero width to them at certain angles (such as -45 degrees)
+        if ((lineAngle < 0 && lineAngle > -90) || (lineAngle >= 90)) {
+            return [
+                [x1 - eraserSize, y1 - eraserSize], 
+                [x1 + eraserSize, y1 + eraserSize], 
+                [x2 + eraserSize, y2 + eraserSize],
+                [x2 - eraserSize, y2 - eraserSize], 
+            ]
+        } else {
+            return [
+                [x1 + eraserSize, y1 - eraserSize], 
+                [x1 - eraserSize, y1 + eraserSize], 
+                [x2 - eraserSize, y2 + eraserSize], 
+                [x2 + eraserSize, y2 - eraserSize],
+            ];
+        }
+    }
+
+    // Slice splitPoints to closePoints indexes, add to new array
+    // e.g. closePoints = [50, 51];
+    // newArray = [points from 0 - 49, points from 52 - end];
+    const splitPathIntoChunks = (splitPoints: string[], closePoints: number[]) => {
+        return splitPoints.reduceRight((result, value, index) => {
+            result[0] = result[0] || [];
+            if (closePoints.includes(index)) {
+                result.unshift([value]);
+            } else {
+                result[0].unshift(value);
+            }
+            return result;
+        }, [] as any[]).filter(pointList => pointList.length > 0);
+    }
+
+    // For a cloned path, adds all necessary new data, such as an ID and a new bounding box
+    const clonedPathData = (pathClone: SvgPath, pointData: []) => {
+        pathClone.id = uuid();
+        pathClone.points = pointData.join(' ');
+        const { top, bottom, left, right } = getPathBoundingBox(pathClone.points);
+        pathClone.top = top;
+        pathClone.bottom = bottom;
+        pathClone.left = left;
+        pathClone.right = right;
+        return pathClone;
+    }
+
+    const findClosePoints = (splitPoints: string[], x: number, y: number, eraserSize: number, type: string): number[] => {
+        const closePoints: number[] = [];
+
+        switch (type) {
+            case tools.line:
+                const lines = groupPointsByTwo(splitPoints);
+                lines.forEach(pointGroup => {
+                    const polygon = pointGroupToBoundingBox(eraserSize, pointGroup);
+                    const inPolygon = pointInPolygon([x, y], polygon);
+                    if (inPolygon) {
+                        // Find the index of the first point from the pointGroup (the line)
+                        // If it's found, add it to closePoints
+                        const splitPointsFoundIndex = splitPoints.indexOf(pointGroup[0]);
+                        if (splitPointsFoundIndex > -1) {
+                            closePoints.push(splitPointsFoundIndex);
+                        }
+                    }
+                });
+                break;
+            case tools.brush:
+                splitPoints.forEach((point, index) => {
+                    const pointXY = point.split(',');
+                    const pointX = Number(pointXY[0]);
+                    const pointY = Number(pointXY[1]);
+        
+                    // Check if the points on the path are within eraserSize units from the x,y value
+                    // Add the index to the close points array if they are
+                    if (Math.abs(x - pointX) <= eraserSize && Math.abs(y - pointY) <= eraserSize) {
+                        closePoints.push(index);
+                    }
+                });
+                break;
+        }
+
+        // An array of indexes from splitPoints that are the close points
+        return closePoints;
     }
 
     const eraseClosePoints = (x: number, y: number) => {
@@ -75,76 +145,23 @@ const useEraser = () => {
             pathsWithinBounds.forEach(path => {
                 const splitPoints = path.points.trim().split(' ');
 
-                // If it's a line:
-                // Get the bounding boxes for each line point (which should be a rectangle that goes out eraserSize and is rotated according to the line)
-                if (path.type === tools.line) {
-                    let debugPolygon: string[] = [];
-                    //console.log('line tool', new Date());
-                    const groupedPoints = groupPointsByTwo(splitPoints);
-                    //console.log(groupedPoints);
-                    groupedPoints.forEach(pointGroup => {
-                        const polygon = pointGroupToBoundingBox(eraserSize, pointGroup);
-                        const inPolygon = pointInPolygon([x, y], polygon);
-                        debugPolygon.push(polygon.map(point => point.join(",")).join(" "));
-                        if (inPolygon) {
-                            //console.log('in polygon', pointGroup, new Date());
-                        }
-                        //const inPolygon = pointInPolygon(4, xVals, yVals, x, y);
-                        // if (inPolygon) {
-                        //     console.log('in polygon', pointGroup, new Date());
-                        // }
-                        //console.log(pointGroup);
-                    });
-                    debugPoints.set(debugPolygon);
-                    return;
-                }
-
-
-                let closePoints: number[] = [];
-                splitPoints.forEach((point, index) => {
-                    const pointXY = point.split(',');
-                    const pointX = Number(pointXY[0]);
-                    const pointY = Number(pointXY[1]);
-
-                    // Check if the points on the path are within eraserSize units from the x,y value
-                    // Add the index to the close points array if they are
-                    if (Math.abs(x - pointX) <= eraserSize && Math.abs(y - pointY) <= eraserSize) {
-                        closePoints.push(index);
-                    }
-                });
-                // Slice splitPoints to closePoints indexes, add to new array
-                // e.g. closePoints = [50, 51];
-                // newArray = [points from 0 - 49, points from 52 - end];
+                // Get close points
+                const closePoints = findClosePoints(splitPoints, x, y, eraserSize, path.type);
                 if (closePoints.length > 0) {
-                    const pointChunks = splitPoints.reduceRight((result, value, index) => {
-                        result[0] = result[0] || [];
-                        if (closePoints.includes(index)) {
-                            result.unshift([value]);
-                        } else {
-                            result[0].unshift(value);
-                        }
-                        return result;
-                    }, [] as any[]).filter(pointList => pointList.length > 0);
-
-                    // Delete the old path
+                    // Get chunks to separate the path
+                    const pointChunks = splitPathIntoChunks(splitPoints, closePoints);
+                    // Find the path in newPaths
                     const foundPathIndex = newPaths.findIndex(item => item.id === path.id);
                     if (foundPathIndex > -1) {
                         // Create new paths from pointChunks
                         pointChunks.forEach(points => {
-                            const pathClone = clone(newPaths[foundPathIndex]);
-                            pathClone.id = uuid();
-                            pathClone.points = points.join(' ');
-                            const { top, bottom, left, right } = getPathBoundingBox(pathClone.points);
-                            pathClone.top = top;
-                            pathClone.bottom = bottom;
-                            pathClone.left = left;
-                            pathClone.right = right;
+                            let pathClone = clone(newPaths[foundPathIndex]);
+                            pathClone = clonedPathData(pathClone, points);
                             newPaths.push(pathClone);
                         });
                         // Delete the old path
                         newPaths.splice(foundPathIndex, 1);
                     }
-                    
                 }
             });
             return newPaths;

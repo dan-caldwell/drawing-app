@@ -20,7 +20,8 @@ const ToolNavbar: React.FC = () => {
     }
 
     const handleToolPress = (tool: string) => {
-        activeTool.get === tool ? activeTool.set(activeDrawTool.get) : activeTool.set(tool);
+        if (activeTool.get !== tool) activeTool.set(tool);
+        if (openSubmenu.get.open && openSubmenu.get.target !== tool) resetOpenSubmenu();
     }
 
     return (

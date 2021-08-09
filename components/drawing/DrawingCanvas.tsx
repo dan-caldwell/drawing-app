@@ -10,6 +10,7 @@ import useSelection from 'drawing-app/hooks/useSelection';
 import useEraser from 'drawing-app/hooks/useEraser';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
+import debugMode from 'drawing-app/constants/debugMode';
 
 const DrawingCanvas: React.FC = () => {
     const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints } = useContext(DrawingContext);
@@ -56,6 +57,8 @@ const DrawingCanvas: React.FC = () => {
             // Set the bounding box
             currentPath.left = currentPath.right = x;
             currentPath.top = currentPath.bottom = y;
+            // The tool type is brush so it's possible to erase
+            currentPath.type = tools.brush;
             return newPaths;
         });
     }
@@ -69,6 +72,8 @@ const DrawingCanvas: React.FC = () => {
         rotationRef.current = false;
         lineContinuationRef.current = 0;
 
+        if (activeTool.get !== tools.select) selectedPath.set(null);
+
         switch (activeTool.get) {
             case tools.select:
                 if (selectedPath.get) {
@@ -77,7 +82,6 @@ const DrawingCanvas: React.FC = () => {
                         rotationRef.current = true;
                         return;
                     }
-
                     // Determine if selection is outside of the selected rectangle area
                     if (selectedOutside(x, y)) selectedPath.set(null);
                     return;
@@ -186,7 +190,7 @@ const DrawingCanvas: React.FC = () => {
             style={styles.container}
         >
             <Svg style={styles.svg}>
-                {debugPoints.get.length > 0 &&
+                {(debugMode && debugPoints.get.length > 0) &&
                     debugPoints.get.map(points => (
                         <Polyline
                             points={points}
