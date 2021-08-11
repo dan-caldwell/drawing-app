@@ -77,17 +77,6 @@ const useEraser = () => {
     // newArray = [points from 0 - closePoints.length - 2];
     const splitPathIntoChunks = (splitPoints: string[], closePoints: number[]) => {
 
-        // This does not work
-        // If closePoints only contains one point, then return an array with the correct slice of points
-        if (closePoints.length === 1) {
-            const output: string[][] = [];
-            const firstSlice = splitPoints.slice(0, closePoints[0]);
-            const secondSlice = splitPoints.slice(closePoints[0]);
-            if (firstSlice.length > 0) output.push(firstSlice);
-            if (secondSlice.length > 0) output.push(secondSlice);
-            return output;
-        }
-
         return splitPoints.reduceRight((result, value, index) => {
             result[0] = result[0] || [];
             if (closePoints.includes(index)) {
@@ -168,19 +157,19 @@ const useEraser = () => {
                     const foundPathIndex = newPaths.findIndex(item => item.id === path.id);
                     if (foundPathIndex > -1) {
                         // Create new paths from pointChunks
-                        // If the pointChunks array length = 1, it's possible the eraser is starting at the end point
                         pointChunks.forEach(points => {
-                            let pathClone = clone(newPaths[foundPathIndex]);
-                            pathClone = clonedPathData(pathClone, points);
-                            newPaths.push(pathClone);
+                            // Points array must be larger than 1 or else the point should be deleted
+                            if (points.length > 1) {
+                                const pathClone = clone(newPaths[foundPathIndex]);
+                                const pathCloneNewData = clonedPathData(pathClone, points);
+                                newPaths.push(pathCloneNewData);
+                            }
                         });
                         // Delete the old path
                         newPaths.splice(foundPathIndex, 1);
                     }
-                    console.log({foundPathIndex, closePoints, pointChunksLength: pointChunks.length, newPathsLength: newPaths.length});
                 }
             });
-            //console.log(newPaths);
             return newPaths;
         });
     }

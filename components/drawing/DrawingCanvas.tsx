@@ -180,8 +180,6 @@ const DrawingCanvas: React.FC = () => {
         }
     }
 
-    //console.log(paths.get);
-
 
     return (
         <Animated.View
