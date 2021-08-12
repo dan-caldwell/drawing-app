@@ -24,6 +24,10 @@ const ToolNavbar: React.FC = () => {
         if (openSubmenu.get.open && openSubmenu.get.target !== tool) resetOpenSubmenu();
     }
 
+    const handleUndo = () => {
+        console.log('undo');
+    }
+
     return (
         <TouchableWithoutFeedback onPress={handlePress}>
             <View style={styles.container}>
@@ -42,6 +46,11 @@ const ToolNavbar: React.FC = () => {
                     active={false} 
                     onPress={handleResetDrawingCanvas} 
                     icon={tools.reset}
+                />
+                <ToolButton 
+                    active={false} 
+                    onPress={handleUndo} 
+                    icon={tools.undo}
                 />
                 <DrawingSettingsNavMenu />
             </View>

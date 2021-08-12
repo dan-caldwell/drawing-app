@@ -23,8 +23,9 @@
 [√] Eraser mode (find shapes where x,y is inside the bounding box, then filter the coords based on if the x,y coords are close to them (close = delete the points in the shape))
     [√] Eraser for lines
     [√] Get point group outside box points (a rotated bounding box from each two points in a line), then check if the mouse is inside of those points
-    [ ] Eraser needs to actually delete the points when erasing (instead it adds points)
+    [√] Eraser needs to actually delete the points when erasing (instead it adds points)
 [ ] Undo tool
+    [ ] Create function to find the difference between the paths and find what changed at what path
 [ ] Select and delete path
 [ ] Ability to change canvas size
 [ ] Ability to save image

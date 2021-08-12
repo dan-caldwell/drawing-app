@@ -13,13 +13,14 @@ import { v4 as uuid } from 'uuid';
 import debugMode from 'drawing-app/constants/debugMode';
 
 const DrawingCanvas: React.FC = () => {
-    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints } = useContext(DrawingContext);
+    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints, pathsHistory } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
     const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
     const { eraseClosePoints } = useEraser();
 
     const startRef = useRef<CanvasPoint>({x: null, y: null});
+    const startPathsRef = useRef<SvgPath[]>([]);
     const moveRef = useRef(false);
     const rotationRef = useRef(false);
     const lineContinuationRef = useRef(0);
@@ -67,6 +68,9 @@ const DrawingCanvas: React.FC = () => {
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
         startRef.current = {x, y};
+
+        // Set the startPaths ref to find the differences between the paths
+        startPathsRef.current = paths.get;
 
         moveRef.current = false;
         rotationRef.current = false;
@@ -166,8 +170,31 @@ const DrawingCanvas: React.FC = () => {
                 setEraserPoint({x: null, y: null});
                 break;
         }
-
         rotationRef.current = false;
+
+        // On release, get the paths differences
+        // Problem: paths.get is the value before update on releasing (e.g. it will still have translateX, translateY if the path has been moved)
+        // Need to get the fully transformed path after release
+        console.log({startPaths: startPathsRef.current, currentPaths: paths.get});
+
+        // Set the pathsHistory (used for undoing)
+        // Need to check first if anything has been changed before setting this
+        //const lastPathExists = paths.get[paths.get.length - 1];
+
+        // This is the last paths value from an array of paths histories
+        //const lastHistoryExists = pathsHistory.get[pathsHistory.get.length - 1];
+        //if (lastPathExists && lastHistoryExists && (lastPathExists.id !== lastHistoryExists[lastHistoryExists.length - 1])) {
+        //     pathsHistory.set(oldHistory => {
+        //         const newHistory = clone(oldHistory);
+        //         newHistory.unshift(paths.get);
+        //         return newHistory.slice(0,20);
+        //     });
+        // //}
+        // console.log({pathsHistory: pathsHistory.get});
+    }
+
+    const findPathsChange = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
+
     }
 
     const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
@@ -179,7 +206,6 @@ const DrawingCanvas: React.FC = () => {
             selectedPath.set(path);
         }
     }
-
 
     return (
         <Animated.View

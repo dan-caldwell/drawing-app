@@ -7,6 +7,15 @@ type ContextState<T> = {
     set: React.Dispatch<React.SetStateAction<T>>
 }
 
+type History = {
+    changeAttribute: string,
+    pathId: string,
+    change: {
+        before: string | number | null,
+        after: string | number | null
+    }
+}
+
 interface ContextProps {
     paths: ContextState<SvgPath[]>,
     activeTool: ContextState<string | null>,
@@ -24,9 +33,11 @@ interface ContextProps {
         brush: string,
         line: string,
         reset: string,
-        erase: string
-    }
-    debugPoints: ContextState<string[]>
+        erase: string,
+        undo: string
+    },
+    debugPoints: ContextState<string[]>,
+    pathsHistory: ContextState<History[]>
 }
 
 const tools = {
@@ -35,7 +46,8 @@ const tools = {
     brush: "brush",
     line: "vector-line",
     reset: "backup-restore",
-    erase: "eraser"
+    erase: "eraser",
+    undo: "undo"
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);
@@ -60,6 +72,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const strokeColor = useContextState<string>('#000');
     const selectedPath = useContextState<SvgPath | null>(null);
     const debugPoints = useContextState<string[]>([]);
+    const pathsHistory = useContextState<History[]>([] as History[]);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({
@@ -84,7 +97,8 @@ const DrawingProvider: React.FC = ({children}) => {
             selectedPath,
             activeDrawTool,
             tools,
-            debugPoints
+            debugPoints,
+            pathsHistory
         }}>
             {children}
         </DrawingContext.Provider>
