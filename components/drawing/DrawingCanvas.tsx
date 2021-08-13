@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState } from 'react';
+import React, { useRef, useContext, useState, useEffect } from 'react';
 import { GestureResponderEvent, StyleSheet, Animated } from 'react-native';
 import Svg, { Circle, G, Polyline, Rect } from 'react-native-svg';
 import { DrawingContext } from '../context/DrawingContext';
@@ -20,7 +20,8 @@ const DrawingCanvas: React.FC = () => {
     const { eraseClosePoints } = useEraser();
 
     const startRef = useRef<CanvasPoint>({x: null, y: null});
-    const startPathsRef = useRef<SvgPath[]>([]);
+    const startPathsRef = useRef<SvgPath[] | null>([]);
+    const releaseRef = useRef<boolean>(false);
     const moveRef = useRef(false);
     const rotationRef = useRef(false);
     const lineContinuationRef = useRef(0);
@@ -71,6 +72,9 @@ const DrawingCanvas: React.FC = () => {
 
         // Set the startPaths ref to find the differences between the paths
         startPathsRef.current = paths.get;
+
+        // Reset the release ref
+        releaseRef.current = false;
 
         moveRef.current = false;
         rotationRef.current = false;
@@ -171,29 +175,51 @@ const DrawingCanvas: React.FC = () => {
                 break;
         }
         rotationRef.current = false;
-
-        // On release, get the paths differences
-        // Problem: paths.get is the value before update on releasing (e.g. it will still have translateX, translateY if the path has been moved)
-        // Need to get the fully transformed path after release
-        console.log({startPaths: startPathsRef.current, currentPaths: paths.get});
-
-        // Set the pathsHistory (used for undoing)
-        // Need to check first if anything has been changed before setting this
-        //const lastPathExists = paths.get[paths.get.length - 1];
-
-        // This is the last paths value from an array of paths histories
-        //const lastHistoryExists = pathsHistory.get[pathsHistory.get.length - 1];
-        //if (lastPathExists && lastHistoryExists && (lastPathExists.id !== lastHistoryExists[lastHistoryExists.length - 1])) {
-        //     pathsHistory.set(oldHistory => {
-        //         const newHistory = clone(oldHistory);
-        //         newHistory.unshift(paths.get);
-        //         return newHistory.slice(0,20);
-        //     });
-        // //}
-        // console.log({pathsHistory: pathsHistory.get});
+        // Set the release ref to indicate responder has been released
+        // To run the useEffect path diff function once on release
+        releaseRef.current = true;
     }
 
     const findPathsChange = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
+        //console.log({oldPaths, newPaths});
+        // For each path, find the property that has been altered based on the ID
+        // Also find what IDs are new and what IDs have been removed
+        
+        // Get the added and removed paths
+        const addedPaths = newPaths.filter(path => !oldPaths.find(item => item.id === path.id));
+        const removedPaths = oldPaths.filter(path => !newPaths.find(item => item.id === path.id));
+
+        //console.log({addedPaths, removedPaths});
+
+        // To equality check between old and new paths, first stringify each object to do an initial equality check
+        // To prevent every single property inside of each path from being checked
+        const newPathsFlat = newPaths.map(path => ({
+            string: JSON.stringify(path),
+            path
+        }));
+        const oldPathsFlat = oldPaths.map(path => ({
+            string: JSON.stringify(path),
+            path
+        }));
+
+        type AlteredPaths = {
+            oldPath: SvgPath,
+            newPath: SvgPath
+        }
+
+        const alteredPaths: AlteredPaths[] = [];
+        newPathsFlat.forEach(pathObj => {
+            const foundInOldPaths = oldPathsFlat.find(oldPathObj => pathObj.path.id === oldPathObj.path.id);
+            if (foundInOldPaths && pathObj.string !== foundInOldPaths.string) {
+                alteredPaths.push({
+                    oldPath: foundInOldPaths.path,
+                    newPath: pathObj.path
+                });
+            }
+        })
+        console.log({alteredPaths});
+
+        // For altered properties, get an array of old and new properties, and the ID of the path that was altered
 
     }
 
@@ -206,6 +232,17 @@ const DrawingCanvas: React.FC = () => {
             selectedPath.set(path);
         }
     }
+
+    useEffect(() => {
+        // Test to see if the startPathsRef has been set (containing the original paths on responder grant)
+        // And if the releaseRef has been set to true, indicating the responder has been released
+        // This allows us to find the difference between the starting paths and the current paths
+        if (startPathsRef.current && releaseRef.current) {
+            findPathsChange(paths.get, startPathsRef.current);
+            startPathsRef.current = null;
+            releaseRef.current = false;
+        }
+    }, [paths.get]);
 
     return (
         <Animated.View
