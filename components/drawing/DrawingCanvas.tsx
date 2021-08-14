@@ -5,7 +5,7 @@ import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
-import { CanvasPoint, SvgPath } from 'drawing-app/types';
+import { AlteredPaths, CanvasPoint, SvgPath } from 'drawing-app/types';
 import useSelection from 'drawing-app/hooks/useSelection';
 import useEraser from 'drawing-app/hooks/useEraser';
 import 'react-native-get-random-values';
@@ -180,16 +180,24 @@ const DrawingCanvas: React.FC = () => {
         releaseRef.current = true;
     }
 
-    const findPathsChange = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
-        //console.log({oldPaths, newPaths});
-        // For each path, find the property that has been altered based on the ID
-        // Also find what IDs are new and what IDs have been removed
-        
+    const findAlteredPaths = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
+        // The alteredPaths array is most likely only ever going to have a length of 1, as this function gets ran every time
+        // A touch ends on the DrawingCanvas
+        let alteredPaths: AlteredPaths[] = [];
         // Get the added and removed paths
-        const addedPaths = newPaths.filter(path => !oldPaths.find(item => item.id === path.id));
-        const removedPaths = oldPaths.filter(path => !newPaths.find(item => item.id === path.id));
+        const addedPaths: AlteredPaths[] = newPaths.filter(path => !oldPaths.find(item => item.id === path.id)).map(path => ({
+            oldPath: path,
+            newPath: path,
+            alteredType: 'added'
+        }));
+        const removedPaths: AlteredPaths[] = oldPaths.filter(path => !newPaths.find(item => item.id === path.id)).map(path => ({
+            oldPath: path,
+            newPath: path,
+            alteredType: 'removed'
+        }));
 
-        //console.log({addedPaths, removedPaths});
+        // Add the added and removed paths to the alteredPaths array
+        alteredPaths = alteredPaths.concat(addedPaths, removedPaths);
 
         // To equality check between old and new paths, first stringify each object to do an initial equality check
         // To prevent every single property inside of each path from being checked
@@ -202,25 +210,18 @@ const DrawingCanvas: React.FC = () => {
             path
         }));
 
-        type AlteredPaths = {
-            oldPath: SvgPath,
-            newPath: SvgPath
-        }
-
-        const alteredPaths: AlteredPaths[] = [];
         newPathsFlat.forEach(pathObj => {
             const foundInOldPaths = oldPathsFlat.find(oldPathObj => pathObj.path.id === oldPathObj.path.id);
             if (foundInOldPaths && pathObj.string !== foundInOldPaths.string) {
+                // The altered path has been found, so add it to the alteredPaths array
                 alteredPaths.push({
                     oldPath: foundInOldPaths.path,
-                    newPath: pathObj.path
+                    newPath: pathObj.path,
+                    alteredType: 'altered'
                 });
             }
-        })
-        console.log({alteredPaths});
-
-        // For altered properties, get an array of old and new properties, and the ID of the path that was altered
-
+        });
+        return alteredPaths;
     }
 
     const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
@@ -238,7 +239,14 @@ const DrawingCanvas: React.FC = () => {
         // And if the releaseRef has been set to true, indicating the responder has been released
         // This allows us to find the difference between the starting paths and the current paths
         if (startPathsRef.current && releaseRef.current) {
-            findPathsChange(paths.get, startPathsRef.current);
+            const alteredPaths = findAlteredPaths(paths.get, startPathsRef.current);
+            pathsHistory.set(oldPathsHistory => {
+                const newPathsHistory = clone(oldPathsHistory);
+                // Add each altered path to the pathsHistory array
+                alteredPaths.forEach(alteredPath => newPathsHistory.unshift(alteredPath));
+                // Return the last 20 changes
+                return newPathsHistory.slice(0, 19);
+            });
             startPathsRef.current = null;
             releaseRef.current = false;
         }

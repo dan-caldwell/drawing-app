@@ -1,19 +1,10 @@
 import React, { createContext } from "react";
-import { AutoJoin, OpenSubmenu, SvgPath } from '@types';
+import { AlteredPaths, AutoJoin, OpenSubmenu, SvgPath } from '@types';
 import useContextState from 'drawing-app/hooks/useContextState';
 
 type ContextState<T> = {
     get: T,
     set: React.Dispatch<React.SetStateAction<T>>
-}
-
-type History = {
-    changeAttribute: string,
-    pathId: string,
-    change: {
-        before: string | number | null,
-        after: string | number | null
-    }
 }
 
 interface ContextProps {
@@ -37,7 +28,7 @@ interface ContextProps {
         undo: string
     },
     debugPoints: ContextState<string[]>,
-    pathsHistory: ContextState<History[]>
+    pathsHistory: ContextState<AlteredPaths[]>
 }
 
 const tools = {
@@ -72,7 +63,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const strokeColor = useContextState<string>('#000');
     const selectedPath = useContextState<SvgPath | null>(null);
     const debugPoints = useContextState<string[]>([]);
-    const pathsHistory = useContextState<History[]>([] as History[]);
+    const pathsHistory = useContextState<AlteredPaths[]>([] as AlteredPaths[]);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({

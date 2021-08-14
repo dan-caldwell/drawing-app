@@ -70,3 +70,9 @@ export type BoundingBox = {
   left: number,
   right: number
 }
+
+export type AlteredPaths = {
+  oldPath: SvgPath,
+  newPath: SvgPath,
+  alteredType: 'added' | 'removed' | 'altered'
+}
