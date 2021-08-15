@@ -25,7 +25,8 @@ interface ContextProps {
         line: string,
         reset: string,
         erase: string,
-        undo: string
+        undo: string,
+        redo: string
     },
     debugPoints: ContextState<string[]>,
     pathsHistory: ContextState<AlteredPaths[]>
@@ -38,7 +39,8 @@ const tools = {
     line: "vector-line",
     reset: "backup-restore",
     erase: "eraser",
-    undo: "undo"
+    undo: "undo",
+    redo: "redo"
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);

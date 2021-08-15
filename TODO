@@ -25,7 +25,8 @@
     [√] Get point group outside box points (a rotated bounding box from each two points in a line), then check if the mouse is inside of those points
     [√] Eraser needs to actually delete the points when erasing (instead it adds points)
 [ ] Undo tool
-    [ ] Create function to find the difference between the paths and find what changed at what path
+    [√] Create function to find the difference between the paths and find what changed at what path
+    [ ] Add functions to useHistoryChange and clean up redundant code from toolNavbar, move code from toolNavbar and drawingCanvas into useHistoryChange
 [ ] Select and delete path
 [ ] Ability to change canvas size
 [ ] Ability to save image
