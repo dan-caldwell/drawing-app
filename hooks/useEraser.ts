@@ -89,8 +89,8 @@ const useEraser = () => {
     }
 
     // For a cloned path, adds all necessary new data, such as an ID and a new bounding box
-    const clonedPathData = (pathClone: SvgPath, pointData: []) => {
-        pathClone.id = uuid();
+    const clonedPathData = (pathClone: SvgPath, pointData: [], foundPathId: string | null) => {
+        pathClone.id = foundPathId || uuid();
         pathClone.points = pointData.join(' ');
         const { top, bottom, left, right } = getPathBoundingBox(pathClone.points);
         pathClone.top = top;
@@ -156,13 +156,19 @@ const useEraser = () => {
                     // Find the path in newPaths
                     const foundPathIndex = newPaths.findIndex(item => item.id === path.id);
                     if (foundPathIndex > -1) {
+                        // For the first path, keep the found path ID to optimize for undoing and redoing
+                        let hasUsedOriginalId = false;
+                        const foundPathId = newPaths[foundPathIndex].id;
+
                         // Create new paths from pointChunks
                         pointChunks.forEach(points => {
                             // Points array must be larger than 1 or else the point should be deleted
+                            // This is used to prevent empty points being created
                             if (points.length > 1) {
                                 const pathClone = clone(newPaths[foundPathIndex]);
-                                const pathCloneNewData = clonedPathData(pathClone, points);
+                                const pathCloneNewData = clonedPathData(pathClone, points, !hasUsedOriginalId ? foundPathId : null);
                                 newPaths.push(pathCloneNewData);
+                                hasUsedOriginalId = true;
                             }
                         });
                         // Delete the old path

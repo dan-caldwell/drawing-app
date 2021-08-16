@@ -8,6 +8,7 @@ import useLineTool from 'drawing-app/hooks/useLineTool';
 import { AlteredPaths, CanvasPoint, SvgPath } from 'drawing-app/types';
 import useSelection from 'drawing-app/hooks/useSelection';
 import useEraser from 'drawing-app/hooks/useEraser';
+import useHistoryChange from 'drawing-app/hooks/useHistoryChange';
 import 'react-native-get-random-values';
 import { v4 as uuid } from 'uuid';
 import debugMode from 'drawing-app/constants/debugMode';
@@ -18,6 +19,7 @@ const DrawingCanvas: React.FC = () => {
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
     const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
     const { eraseClosePoints } = useEraser();
+    const { alterPathsHistoryAfterRelease } = useHistoryChange();
 
     const startRef = useRef<CanvasPoint>({x: null, y: null});
     const startPathsRef = useRef<SvgPath[] | null>([]);
@@ -180,49 +182,7 @@ const DrawingCanvas: React.FC = () => {
         releaseRef.current = true;
     }
 
-    const findAlteredPaths = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
-        // The alteredPaths array is most likely only ever going to have a length of 1, as this function gets ran every time
-        // A touch ends on the DrawingCanvas
-        let alteredPaths: AlteredPaths[] = [];
-        // Get the added and removed paths
-        const addedPaths: AlteredPaths[] = newPaths.filter(path => !oldPaths.find(item => item.id === path.id)).map(path => ({
-            oldPath: path,
-            newPath: path,
-            alteredType: 'added'
-        }));
-        const removedPaths: AlteredPaths[] = oldPaths.filter(path => !newPaths.find(item => item.id === path.id)).map(path => ({
-            oldPath: path,
-            newPath: path,
-            alteredType: 'removed'
-        }));
-
-        // Add the added and removed paths to the alteredPaths array
-        alteredPaths = alteredPaths.concat(addedPaths, removedPaths);
-
-        // To equality check between old and new paths, first stringify each object to do an initial equality check
-        // To prevent every single property inside of each path from being checked
-        const newPathsFlat = newPaths.map(path => ({
-            string: JSON.stringify(path),
-            path
-        }));
-        const oldPathsFlat = oldPaths.map(path => ({
-            string: JSON.stringify(path),
-            path
-        }));
-
-        newPathsFlat.forEach(pathObj => {
-            const foundInOldPaths = oldPathsFlat.find(oldPathObj => pathObj.path.id === oldPathObj.path.id);
-            if (foundInOldPaths && pathObj.string !== foundInOldPaths.string) {
-                // The altered path has been found, so add it to the alteredPaths array
-                alteredPaths.push({
-                    oldPath: foundInOldPaths.path,
-                    newPath: pathObj.path,
-                    alteredType: 'altered'
-                });
-            }
-        });
-        return alteredPaths;
-    }
+    
 
     const handleSelectPath = (e: GestureResponderEvent, path: SvgPath) => {
         //setSelectedPath(path);
@@ -239,18 +199,12 @@ const DrawingCanvas: React.FC = () => {
         // And if the releaseRef has been set to true, indicating the responder has been released
         // This allows us to find the difference between the starting paths and the current paths
         if (startPathsRef.current && releaseRef.current) {
-            const alteredPaths = findAlteredPaths(paths.get, startPathsRef.current);
-            pathsHistory.set(oldPathsHistory => {
-                const newPathsHistory = clone(oldPathsHistory);
-                // Add each altered path to the pathsHistory array
-                alteredPaths.forEach(alteredPath => newPathsHistory.unshift(alteredPath));
-                // Return the last 20 changes
-                return newPathsHistory.slice(0, 19);
-            });
+            alterPathsHistoryAfterRelease(startPathsRef.current);
             startPathsRef.current = null;
             releaseRef.current = false;
         }
-    }, [paths.get]);
+        //console.log(pathsHistory.get.length);
+    }, [paths.get, releaseRef.current]);
 
     return (
         <Animated.View

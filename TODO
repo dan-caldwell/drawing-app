@@ -26,7 +26,11 @@
     [√] Eraser needs to actually delete the points when erasing (instead it adds points)
 [ ] Undo tool
     [√] Create function to find the difference between the paths and find what changed at what path
-    [ ] Add functions to useHistoryChange and clean up redundant code from toolNavbar, move code from toolNavbar and drawingCanvas into useHistoryChange
+    [√] Add functions to useHistoryChange and clean up redundant code from toolNavbar, move code from toolNavbar and drawingCanvas into useHistoryChange
+    [√] When using the eraser tool, then undoing multiple times, the undo tool does not work after the first undo
+    [√] When erasing and splitting up paths, keep one of the paths as the original ID so the number of added paths is 1, removed is 0, and altered is 1
+        instead of 2 added and 1 removed
+    [ ] Redo can loop around and act as undo sometimes
 [ ] Select and delete path
 [ ] Ability to change canvas size
 [ ] Ability to save image
