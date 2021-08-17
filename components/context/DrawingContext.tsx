@@ -29,7 +29,7 @@ interface ContextProps {
         redo: string
     },
     debugPoints: ContextState<string[]>,
-    pathsHistory: ContextState<AlteredPaths[]>
+    pathsHistory: ContextState<AlteredPaths[][]>
 }
 
 const tools = {
@@ -65,7 +65,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const strokeColor = useContextState<string>('#000');
     const selectedPath = useContextState<SvgPath | null>(null);
     const debugPoints = useContextState<string[]>([]);
-    const pathsHistory = useContextState<AlteredPaths[]>([] as AlteredPaths[]);
+    const pathsHistory = useContextState<AlteredPaths[][]>([] as AlteredPaths[][]);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({

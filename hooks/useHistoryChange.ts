@@ -52,7 +52,7 @@ const useHistoryChange = () => {
             }
         });
 
-        //console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
+        console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
 
         return alteredPaths;
     }
@@ -63,8 +63,8 @@ const useHistoryChange = () => {
         const alteredPaths = findAlteredPaths(paths.get, startPaths);
         pathsHistory.set(oldPathsHistory => {
             const newPathsHistory = clone(oldPathsHistory);
-            // Add each altered path to the pathsHistory array
-            alteredPaths.forEach(alteredPath => newPathsHistory.unshift(alteredPath));
+            // Add the altered paths to the pathsHistory array
+            newPathsHistory.unshift(alteredPaths);
             // Return the last 20 changes
             return newPathsHistory.slice(0, 19);
         });
@@ -111,50 +111,58 @@ const useHistoryChange = () => {
         // Set the paths based on the change
         paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
-            const historyTarget: AlteredPaths = changeType === 'undo' ? pathsHistory.get[0] : pathsHistory.get[pathsHistory.get.length - 1];
+            const historyTargets: AlteredPaths[] = changeType === 'undo' ? pathsHistory.get[0] : pathsHistory.get[pathsHistory.get.length - 1];
 
             // Test whether the paths array has changed
             // This is used to determine if the pathsHistory array should be set
             let pathsHasChanged: boolean = false;
-            
-            if (!historyTarget) return newPaths;
-            
-            const targetAlteredType = historyTarget.alteredType;
 
-            switch (changeType) {
-                case 'undo':
-                    switch (targetAlteredType) {
-                        case 'added':
-                            // Remove the added path
-                            pathsHasChanged = removePath(newPaths, historyTarget);
-                            break;
-                        case 'removed':
-                            // Add the removed path
-                            pathsHasChanged = addPath(newPaths, historyTarget);
-                            break;
-                        case 'altered':
-                            // Set the altered paths
-                            pathsHasChanged = alterPath(newPaths, historyTarget);
-                            break;
-                    }
-                    break;
-                case 'redo':
-                    switch (targetAlteredType) {
-                        case 'added':
-                            // Add the added path
-                            pathsHasChanged = addPath(newPaths, historyTarget);
-                            break;
-                        case 'removed':
-                            // Remove the removed path
-                            pathsHasChanged = removePath(newPaths, historyTarget);
-                            break;
-                        case 'altered':
-                            // Set the altered paths
-                            pathsHasChanged = alterPath(newPaths, historyTarget);
-                            break;
-                    }
-                    break;
-            }
+            historyTargets.forEach(historyTarget => {
+
+                let pathsHasChangedIndividual: boolean = false;
+                
+                if (!historyTarget) return newPaths;
+                
+                const targetAlteredType = historyTarget.alteredType;
+
+                switch (changeType) {
+                    case 'undo':
+                        switch (targetAlteredType) {
+                            case 'added':
+                                // Remove the added path
+                                pathsHasChangedIndividual = removePath(newPaths, historyTarget);
+                                break;
+                            case 'removed':
+                                // Add the removed path
+                                pathsHasChangedIndividual = addPath(newPaths, historyTarget);
+                                break;
+                            case 'altered':
+                                // Set the altered paths
+                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget);
+                                break;
+                        }
+                        break;
+                    case 'redo':
+                        switch (targetAlteredType) {
+                            case 'added':
+                                // Add the added path
+                                pathsHasChangedIndividual = addPath(newPaths, historyTarget);
+                                break;
+                            case 'removed':
+                                // Remove the removed path
+                                pathsHasChangedIndividual = removePath(newPaths, historyTarget);
+                                break;
+                            case 'altered':
+                                // Set the altered paths
+                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget);
+                                break;
+                        }
+                        break;
+                }
+                // This is meant to keep pathsHasChanged from changing back to false if it was previously set to true
+                if (pathsHasChangedIndividual) pathsHasChanged = true;
+            });
+
 
             adjustPathsHistoryAfterPress(pathsHasChanged, changeType);
 

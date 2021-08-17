@@ -4,15 +4,9 @@ import ToolButton from '../components/tools/ToolButton';
 import { DrawingContext } from '../components/context/DrawingContext';
 import ToolNavMenu from './nav-menus/ToolNavMenu';
 import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
-import clone from 'clone';
-import { AlteredPaths } from 'drawing-app/types';
-import useHistoryChange from 'drawing-app/hooks/useHistoryChange';
-
-const ICON_MARGIN: number = 10;
 
 const ToolNavbar: React.FC = () => {
     const { paths, resetOpenSubmenu, openSubmenu, activeTool, selectedPath, tools, pathsHistory } = useContext(DrawingContext);
-    const { handleHistoryChange } = useHistoryChange();
 
     const handlePress = (e: GestureResponderEvent) => {
         if (openSubmenu.get.open) resetOpenSubmenu();
@@ -48,16 +42,6 @@ const ToolNavbar: React.FC = () => {
                     onPress={handleResetDrawingCanvas} 
                     icon={tools.reset}
                 />
-                <ToolButton 
-                    active={false} 
-                    onPress={() => handleHistoryChange('undo')} 
-                    icon={tools.undo}
-                />
-                <ToolButton
-                    active={false}
-                    onPress={() => handleHistoryChange('redo')}
-                    icon={tools.redo}
-                />
                 <DrawingSettingsNavMenu />
             </View>
         </TouchableWithoutFeedback>
@@ -74,13 +58,5 @@ const styles = StyleSheet.create({
         borderTopColor: '#ddd',
         borderTopWidth: 1,
         justifyContent: 'center',
-    },
-    toolSubmenu: {
-        position: 'absolute',
-        bottom: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderRadius: ICON_MARGIN,
-        marginBottom: ICON_MARGIN,
-        padding: ICON_MARGIN,
     },
 });
