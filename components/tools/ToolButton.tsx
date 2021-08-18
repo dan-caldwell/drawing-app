@@ -7,23 +7,25 @@ import { ICON_MARGIN } from 'drawing-app/constants/Layout';
 
 interface Props {
     text?: string,
-    onPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
-    onLongPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string) => void,
+    onPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string, submenuPosition: string) => void,
+    onLongPress?: (e: GestureResponderEvent, measurement: Measurement, icon: string, submenuPosition: string) => void,
     active?: boolean,
     children?: JSX.Element | React.FC,
     style?: object[] | object,
     icon?: any,
     openSubmenuOnPress?: boolean
+    styleType?: 'light' | 'normal' | 'dark',
+    submenuPosition?: 'above' | 'below' | 'left' | 'right'
 }
 
-const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress, openSubmenuOnPress = false}) => {
+const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress, openSubmenuOnPress = false, styleType = 'normal', submenuPosition = 'above'}) => {
     const buttonRef = useRef<View>(null);
 
     const handleLongPress = async (e: GestureResponderEvent) => {
         if (!buttonRef.current) return;
         const measurement = await measureComponent(buttonRef.current);
         if (!onLongPress || typeof onLongPress !== 'function') return;
-        onLongPress(e, measurement, icon);
+        onLongPress(e, measurement, icon, submenuPosition);
     }
 
     const handlePress = async (e: GestureResponderEvent) => {
@@ -31,7 +33,7 @@ const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLong
         if (openSubmenuOnPress) {
             if (!buttonRef.current) return;
             const measurement = await measureComponent(buttonRef.current);
-            onPress(e, measurement, icon);
+            onPress(e, measurement, icon, submenuPosition);
             return;
         }
         const measurement = {
@@ -42,13 +44,31 @@ const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLong
             x: 0,
             y: 0
         }
-        onPress(e, measurement, '');
+        onPress(e, measurement, '', submenuPosition);
+    }
+
+    // Set the style type use
+    // This does not work with styles[styleType + 'ToolButton']
+    // So using a switch/case instead
+    let styleTypeUse = styles.normalToolButton;
+    switch (styleType) {
+        case 'light':
+            styleTypeUse = styles.lightToolButton;
+            break;
+        case 'dark':
+            styleTypeUse = styles.darkToolButton;
+            break;
     }
 
     return (
         <View style={styles.container} ref={buttonRef}>
             <TouchableOpacity 
-                style={[styles.button, active ? styles.active : null, style || null]} 
+                style={[
+                    styles.button, 
+                    active ? styles.active : null,
+                    !active ? styleTypeUse : null,
+                    style || null
+                ]}
                 onPress={handlePress} 
                 onLongPress={handleLongPress} 
             >
@@ -80,4 +100,13 @@ const styles = StyleSheet.create({
     activeText: {
         color: "#fff"
     },
+    normalToolButton: {
+        backgroundColor: '#ddd'
+    },
+    darkToolButton: {
+        backgroundColor: "#ccc"
+    },
+    lightToolButton: {
+        backgroundColor: '#eee'
+    }
 });

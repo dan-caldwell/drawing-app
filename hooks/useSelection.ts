@@ -164,6 +164,17 @@ const useSelection = () => {
         return !(x >= selectedPath.get.left && x <= selectedPath.get.right && y >= selectedPath.get.top && y <= selectedPath.get.bottom);
     }
 
+    const deletePath = () => {
+        if (!selectedPath.get) return;
+        paths.set(oldPaths => {
+            const newPaths = clone(oldPaths);
+            const foundSelectedPathIndex = newPaths.findIndex(item => item.id === selectedPath.get?.id);
+            if (foundSelectedPathIndex > -1) newPaths.splice(foundSelectedPathIndex, 1);
+            return newPaths;
+        });
+        selectedPath.set(null);
+    }
+
     return { 
         setCurrentPathBoundaries, 
         updateSelectionTranslateAfterRelease, 
@@ -171,7 +182,8 @@ const useSelection = () => {
         rotateSelection,
         translateSelection,
         selectedOutside,
-        getPathBoundingBox
+        getPathBoundingBox,
+        deletePath
     };
 
 }

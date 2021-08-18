@@ -26,7 +26,10 @@ interface ContextProps {
         reset: string,
         erase: string,
         undo: string,
-        redo: string
+        redo: string,
+        trash: string,
+        document: string,
+        settings: string
     },
     debugPoints: ContextState<string[]>,
     pathsHistory: ContextState<AlteredPaths[][]>
@@ -40,7 +43,10 @@ const tools = {
     reset: "backup-restore",
     erase: "eraser",
     undo: "undo",
-    redo: "redo"
+    redo: "redo",
+    trash: "trash-can",
+    document: "file-document",
+    settings: "cog"
 }
 
 export const DrawingContext = createContext<ContextProps>({} as ContextProps);

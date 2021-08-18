@@ -9,7 +9,7 @@ import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
 const DrawingSettingsNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { autoJoin, strokeWidth } = useContext(DrawingContext);
+    const { autoJoin, strokeWidth, tools } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu } = useNavMenu(submenuRef);
 
     const handleSubmenuPress = () => {
@@ -29,11 +29,11 @@ const DrawingSettingsNavMenu: React.FC = () => {
 
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === "cog"}>
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === tools.settings}>
                 <ToolButton 
                     text="Move"
                     onPress={handleSubmenuPress}
-                    icon="cog"
+                    icon={tools.settings}
                     style={styles.lastSubmenuButton}
                 />
                 <Slider 
@@ -58,7 +58,7 @@ const DrawingSettingsNavMenu: React.FC = () => {
             <ToolButton 
                 active={false}
                 onPress={handleNavButtonPress}
-                icon="cog"
+                icon={tools.settings}
                 openSubmenuOnPress={true}
             />
         </>

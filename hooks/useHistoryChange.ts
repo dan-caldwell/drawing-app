@@ -95,11 +95,12 @@ const useHistoryChange = () => {
     }
 
     // Alter a path in newPaths
-    const alterPath = (newPaths: SvgPath[], historyTarget: AlteredPaths) => {
+    const alterPath = (newPaths: SvgPath[], historyTarget: AlteredPaths, changeType: 'undo' | 'redo') => {
         let pathsHasChanged = false;
         const targetPathIndex = newPaths.findIndex(path => path.id === historyTarget.newPath.id && historyTarget.alteredType === 'altered');
         if (targetPathIndex > -1) {
-            newPaths[targetPathIndex] = historyTarget.oldPath;
+            // For altering a path, use newPath to redo, oldPath to undo
+            newPaths[targetPathIndex] = changeType === 'redo' ? historyTarget.newPath : historyTarget.oldPath;
             selectedPath.set(newPaths[targetPathIndex]);
             pathsHasChanged = true;
         }
@@ -138,7 +139,7 @@ const useHistoryChange = () => {
                                 break;
                             case 'altered':
                                 // Set the altered paths
-                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget);
+                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget, changeType);
                                 break;
                         }
                         break;
@@ -154,13 +155,15 @@ const useHistoryChange = () => {
                                 break;
                             case 'altered':
                                 // Set the altered paths
-                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget);
+                                pathsHasChangedIndividual = alterPath(newPaths, historyTarget, changeType);
                                 break;
                         }
                         break;
                 }
                 // This is meant to keep pathsHasChanged from changing back to false if it was previously set to true
                 if (pathsHasChangedIndividual) pathsHasChanged = true;
+
+                console.log({targetAlteredType, pathsHasChangedIndividual});
             });
 
 

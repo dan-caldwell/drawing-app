@@ -8,7 +8,7 @@ import { measureComponent } from 'drawing-app/utils';
 const useNavMenu = (submenuRef: React.RefObject<View>) => {
     const { openSubmenu, activeTool, resetOpenSubmenu } = useContext(DrawingContext);
 
-    const handleNavButtonPress = async (e: GestureResponderEvent, measurement: Measurement, target: string) => {
+    const handleNavButtonPress = async (e: GestureResponderEvent, measurement: Measurement, target: string, submenuPosition: string) => {
 
         if (!submenuRef.current) return;
         if (openSubmenu.get.open && openSubmenu.get.target === target) {
@@ -17,18 +17,20 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
         }
         const submenuMeasurement = await measureComponent(submenuRef.current);
 
+        const bottom = submenuPosition === 'above' ? measurement.y + measurement.height : 100;
+
         // Handle 0 values for width and height
         // This will only run once as it requires openSubmenu.get.reRendering to be set to false
         if ((submenuMeasurement.width === 0 || submenuMeasurement.height === 0) && !openSubmenu.get.reRendering) {
             openSubmenu.set({
                 left: 0,
-                bottom: measurement.y + measurement.height,
+                bottom,
                 open: true,
                 target,
                 reRendering: true
             });
             // Call this function again with the updated state
-            handleNavButtonPress(e, measurement, target);
+            handleNavButtonPress(e, measurement, target, submenuPosition);
             return;
         }
 
@@ -38,7 +40,14 @@ const useNavMenu = (submenuRef: React.RefObject<View>) => {
         if (leftValue > windowWidth) leftValue = windowWidth;
         openSubmenu.set({
             left: leftValue,
-            bottom: measurement.y + measurement.height,
+            bottom,
+            open: true,
+            target,
+            reRendering: false
+        });
+        console.log({
+            left: leftValue,
+            bottom,
             open: true,
             target,
             reRendering: false
