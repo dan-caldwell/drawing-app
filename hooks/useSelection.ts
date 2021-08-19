@@ -2,9 +2,11 @@ import { DrawingContext } from "drawing-app/components/context/DrawingContext";
 import { useContext } from "react";
 import clone from 'clone';
 import { CanvasPoint } from "drawing-app/types";
+import useHistoryChange from "./useHistoryChange";
 
 const useSelection = () => {
     const { paths, selectedPath } = useContext(DrawingContext);
+    const { alterPathsHistoryAfterRelease } = useHistoryChange();
 
     const translateSelection = (startRef: React.MutableRefObject<CanvasPoint>, x: number, y: number) => {
         if (!selectedPath.get) return;
@@ -170,6 +172,7 @@ const useSelection = () => {
             const newPaths = clone(oldPaths);
             const foundSelectedPathIndex = newPaths.findIndex(item => item.id === selectedPath.get?.id);
             if (foundSelectedPathIndex > -1) newPaths.splice(foundSelectedPathIndex, 1);
+            alterPathsHistoryAfterRelease(oldPaths, newPaths);
             return newPaths;
         });
         selectedPath.set(null);

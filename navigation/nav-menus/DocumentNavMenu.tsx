@@ -14,11 +14,9 @@ const DocumentNavMenu: React.FC = () => {
         console.log('submenu press')
     }
 
-    //openSubmenu.get.open && openSubmenu.get.target === tools.document
-
     return (
         <>
-            <TooltipSubmenu ref={submenuRef} open={true}>
+            <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === tools.document}>
                 <ToolButton 
                     text="Placeholder"
                     onPress={handleSubmenuPress}
@@ -32,7 +30,7 @@ const DocumentNavMenu: React.FC = () => {
                 icon={tools.document}
                 styleType="light"
                 openSubmenuOnPress={true}
-                submenuPosition='below'
+                submenuPosition="below"
             />
         </>
     )

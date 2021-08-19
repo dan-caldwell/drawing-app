@@ -52,15 +52,16 @@ const useHistoryChange = () => {
             }
         });
 
-        console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
+        // Used for debugging
+        //console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
 
         return alteredPaths;
     }
 
     // Set the paths history after the responder release (used on DrawingCanvas in useEffect)
-    const alterPathsHistoryAfterRelease = (startPaths: SvgPath[]) => {
+    const alterPathsHistoryAfterRelease = (startPaths: SvgPath[], currentPaths: SvgPath[] = paths.get) => {
         if (!startPaths) return;
-        const alteredPaths = findAlteredPaths(paths.get, startPaths);
+        const alteredPaths = findAlteredPaths(currentPaths || paths.get, startPaths);
         pathsHistory.set(oldPathsHistory => {
             const newPathsHistory = clone(oldPathsHistory);
             // Add the altered paths to the pathsHistory array

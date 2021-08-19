@@ -33,9 +33,12 @@ export type Measurement = {
 export type OpenSubmenu = {
   open: boolean,
   left: number,
-  bottom: number,
+  bottom: number | string,
+  top: number | string,
   target: string | null,
-  reRendering: boolean
+  reRendering: boolean,
+  submenuPosition: string | null,
+  caretLeft: number
 }
 
 export type AutoJoin = {

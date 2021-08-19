@@ -77,9 +77,12 @@ const DrawingProvider: React.FC = ({children}) => {
         openSubmenu.set({
             bottom: 0,
             left: 0,
+            top: 0,
             open: false,
             target: null,
-            reRendering: false
+            reRendering: false,
+            submenuPosition: null,
+            caretLeft: 0
         });
     }
     

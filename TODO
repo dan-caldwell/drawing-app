@@ -25,7 +25,7 @@
     [√] Get point group outside box points (a rotated bounding box from each two points in a line), then check if the mouse is inside of those points
     [√] Eraser needs to actually delete the points when erasing (instead it adds points)
 [√] Select and delete path
-[√] Undo tool
+[ ] Undo tool
     [√] Create function to find the difference between the paths and find what changed at what path
     [√] Add functions to useHistoryChange and clean up redundant code from toolNavbar, move code from toolNavbar and drawingCanvas into useHistoryChange
     [√] When using the eraser tool, then undoing multiple times, the undo tool does not work after the first undo
@@ -33,8 +33,11 @@
         instead of 2 added and 1 removed
     [√] Need to be able to handle multiple history changes at the same time (e.g. adding a path and altering a different one)
     [√] Redo tool sometimes does not work all the way (e.g. make a square, undo all sides, then redo back to square does not work)
+    [√] Undo/redo does not work for deleting selected elements
+    [ ] If no path exists after undo/redo, deselect
+    [ ] Select undo/redo path target after undo/redo
 [ ] Document settings nav menu
-    [ ] Submenu open from below
+    [√] Submenu open from below
 [ ] Ability to change canvas size
 [ ] Ability to save image
 [ ] Ability to save project
