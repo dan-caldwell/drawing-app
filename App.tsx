@@ -4,7 +4,7 @@ import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import ToolNavbar from './navigation/ToolNavbar';
 import Gestures from './components/drawing/Gestures';
-import DrawingCanvas from './components/drawing/DrawingCanvas';
+import { MemoizedDrawingCanvas } from './components/drawing/DrawingCanvas';
 import DrawingProvider from './components/context/DrawingContext';
 import DocumentNavbar from './navigation/DocumentNavbar';
 
@@ -21,7 +21,7 @@ export default function App() {
 					<View style={styles.canvas}>
 						<DocumentNavbar />
 						<Gestures>
-							<DrawingCanvas />
+							<MemoizedDrawingCanvas />
 						</Gestures>
 					</View>
 					<ToolNavbar />

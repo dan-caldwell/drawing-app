@@ -37,8 +37,6 @@ const useHistoryChange = () => {
             path
         }));
 
-        let alternatePathsNum = 0;
-
         newPathsFlat.forEach(pathObj => {
             const foundInOldPaths = oldPathsFlat.find(oldPathObj => pathObj.path.id === oldPathObj.path.id);
             if (foundInOldPaths && pathObj.string !== foundInOldPaths.string) {
@@ -48,7 +46,6 @@ const useHistoryChange = () => {
                     newPath: pathObj.path,
                     alteredType: 'altered'
                 });
-                alternatePathsNum++;
             }
         });
 
@@ -62,12 +59,13 @@ const useHistoryChange = () => {
     const alterPathsHistoryAfterRelease = (startPaths: SvgPath[], currentPaths: SvgPath[] = paths.get) => {
         if (!startPaths) return;
         const alteredPaths = findAlteredPaths(currentPaths || paths.get, startPaths);
-        pathsHistory.set(oldPathsHistory => {
-            const newPathsHistory = clone(oldPathsHistory);
+        pathsHistory.set(oldHistory => {
+            const newHistory = clone(oldHistory);
             // Add the altered paths to the pathsHistory array
-            newPathsHistory.unshift(alteredPaths);
+            newHistory.unshift(alteredPaths);
+
             // Return the last 20 changes
-            return newPathsHistory.slice(0, 19);
+            return newHistory.slice(0, 19);
         });
     }
 
@@ -163,12 +161,17 @@ const useHistoryChange = () => {
                 }
                 // This is meant to keep pathsHasChanged from changing back to false if it was previously set to true
                 if (pathsHasChangedIndividual) pathsHasChanged = true;
-
-                console.log({targetAlteredType, pathsHasChangedIndividual});
             });
 
 
             adjustPathsHistoryAfterPress(pathsHasChanged, changeType);
+
+            // Check if selected path still exists
+            // If it doesn't, deselect the selected path
+            if (selectedPath.get) {
+                const selectedPathExists = newPaths.find(item => selectedPath.get && item.id === selectedPath.get.id);
+                if (!selectedPathExists) selectedPath.set(null);
+            } 
 
             return newPaths;
         });
@@ -178,24 +181,30 @@ const useHistoryChange = () => {
     const adjustPathsHistoryAfterPress = (pathsChanged: boolean, changeType: 'undo' | 'redo') => {
         // If the paths array has not been changed, end the function and don't set the pathsHistory array
         if (!pathsChanged) return;
-        switch (changeType) {
-            case 'undo':
-                // Move the first item of the pathsHistory array to the end
-                pathsHistory.set(oldHistory => {
-                    const newHistory = clone(oldHistory);
+
+        pathsHistory.set(oldHistory => {
+            const newHistory = clone(oldHistory);
+
+            switch (changeType) {
+                case 'undo':
+                    // Move the first item of the pathsHistory array to the end
                     newHistory.splice(newHistory.length - 1, 0, newHistory.splice(0, 1)[0]);
-                    return newHistory;
-                });
-                break;
-            case 'redo':
-                // Move the last item of the pathsHistory array to the beginning
-                pathsHistory.set(oldHistory => {
-                    const newHistory = clone(oldHistory);
+                    break;
+                case 'redo':
+                    // Move the last item of the pathsHistory array to the beginning
                     newHistory.splice(0, 0, newHistory.splice(newHistory.length - 1, 1)[0]);
-                    return newHistory;
-                });
-                break;
-        }
+                    break;
+            }
+
+            // Used for debugging
+            // console.log(newHistory.map(altered => {
+            //     return altered.map(paths => {
+            //         return {newPathId: paths.newPath.id, oldPathsId: paths.oldPath.id, alteredType: paths.alteredType}
+            //     })
+            // }));
+
+            return newHistory;
+        });
     } 
 
     return { findAlteredPaths, alterPathsHistoryAfterRelease, adjustPathsHistoryAfterPress, handleHistoryChange }

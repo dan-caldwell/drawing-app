@@ -24,6 +24,7 @@ const DrawingCanvas: React.FC = () => {
     const startRef = useRef<CanvasPoint>({x: null, y: null});
     const startPathsRef = useRef<SvgPath[] | null>([]);
     const releaseRef = useRef<boolean>(false);
+    const responderGrantRef = useRef<boolean>(false);
     const moveRef = useRef(false);
     const rotationRef = useRef(false);
     const lineContinuationRef = useRef(0);
@@ -68,6 +69,18 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderGrant = (e: GestureResponderEvent) => {
+        // Return if there is an open submenu
+        // Meaning the submenu should close and nothing should be drawn on the canvas
+        if (openSubmenu.get.open) {
+            resetOpenSubmenu();
+            return;
+        }
+
+        // The responder grant has been triggered
+        // Used for determining if move/release actions should be triggered as well
+        responderGrantRef.current = true;
+
+
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
         startRef.current = {x, y};
@@ -109,10 +122,11 @@ const DrawingCanvas: React.FC = () => {
                 setEraserPoint({x, y});
                 break;
         }
-        if (openSubmenu.get.open) resetOpenSubmenu();
     }
 
     const handleResponderMove = (e: GestureResponderEvent) => {
+        if (!responderGrantRef.current) return;
+
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
 
@@ -148,6 +162,7 @@ const DrawingCanvas: React.FC = () => {
     }
 
     const handleResponderRelease = (e: GestureResponderEvent) => {
+        if (!responderGrantRef.current) return;
         
         const x = e.nativeEvent.locationX;
         const y = e.nativeEvent.locationY;
@@ -180,6 +195,8 @@ const DrawingCanvas: React.FC = () => {
         // Set the release ref to indicate responder has been released
         // To run the useEffect path diff function once on release
         releaseRef.current = true;
+        // Reset responder grant ref
+        responderGrantRef.current = false;
     }
 
     
@@ -286,6 +303,9 @@ const DrawingCanvas: React.FC = () => {
         </Animated.View>
     )
 }
+
+// DrawingCanvas will re-render a lot, so memoize it to improve performance
+export const MemoizedDrawingCanvas = React.memo(DrawingCanvas);
 
 export default DrawingCanvas;
 

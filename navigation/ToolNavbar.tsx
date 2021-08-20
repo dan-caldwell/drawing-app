@@ -6,16 +6,10 @@ import ToolNavMenu from './nav-menus/ToolNavMenu';
 import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 
 const ToolNavbar: React.FC = () => {
-    const { paths, resetOpenSubmenu, openSubmenu, activeTool, selectedPath, tools, pathsHistory } = useContext(DrawingContext);
+    const { paths, resetOpenSubmenu, openSubmenu, activeTool, tools } = useContext(DrawingContext);
 
     const handlePress = (e: GestureResponderEvent) => {
         if (openSubmenu.get.open) resetOpenSubmenu();
-    }
-
-    const handleResetDrawingCanvas = () => {
-        paths.set([]);
-        selectedPath.set(null);
-        pathsHistory.set([]);
     }
 
     const handleToolPress = (tool: string) => {
@@ -37,11 +31,6 @@ const ToolNavbar: React.FC = () => {
                     active={activeTool.get === tools.select}
                 />
                 <ToolNavMenu />
-                <ToolButton 
-                    active={false} 
-                    onPress={handleResetDrawingCanvas} 
-                    icon={tools.reset}
-                />
                 <DrawingSettingsNavMenu />
             </View>
         </TouchableWithoutFeedback>
