@@ -32,7 +32,8 @@ interface ContextProps {
         settings: string
     },
     debugPoints: ContextState<string[]>,
-    pathsHistory: ContextState<AlteredPaths[][]>
+    pathsHistory: ContextState<AlteredPaths[][]>,
+    historyIndex: ContextState<number>
 }
 
 const tools = {
@@ -72,6 +73,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const selectedPath = useContextState<SvgPath | null>(null);
     const debugPoints = useContextState<string[]>([]);
     const pathsHistory = useContextState<AlteredPaths[][]>([] as AlteredPaths[][]);
+    const historyIndex = useContextState<number>(0);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({
@@ -100,7 +102,8 @@ const DrawingProvider: React.FC = ({children}) => {
             activeDrawTool,
             tools,
             debugPoints,
-            pathsHistory
+            pathsHistory,
+            historyIndex
         }}>
             {children}
         </DrawingContext.Provider>

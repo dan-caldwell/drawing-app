@@ -4,7 +4,7 @@ import { DrawingContext } from "drawing-app/components/context/DrawingContext";
 import clone from 'clone';
 
 const useHistoryChange = () => {
-    const { pathsHistory, paths, selectedPath } = useContext(DrawingContext);
+    const { pathsHistory, historyIndex, paths, selectedPath } = useContext(DrawingContext);
 
     // After responder release, this function is ran to find what paths have been altered/added/removed
     const findAlteredPaths = (newPaths: SvgPath[], oldPaths: SvgPath[]) => {
@@ -62,11 +62,12 @@ const useHistoryChange = () => {
         pathsHistory.set(oldHistory => {
             const newHistory = clone(oldHistory);
             // Add the altered paths to the pathsHistory array
-            newHistory.unshift(alteredPaths);
+            newHistory.splice(historyIndex.get + 1, 0, alteredPaths);
 
             // Return the last 20 changes
-            return newHistory.slice(0, 19);
+            return newHistory.slice(-20);
         });
+        historyIndex.set(historyIndex.get + 1);
     }
 
     // Remove a path from newPaths
@@ -111,7 +112,8 @@ const useHistoryChange = () => {
         // Set the paths based on the change
         paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
-            const historyTargets: AlteredPaths[] = changeType === 'undo' ? pathsHistory.get[0] : pathsHistory.get[pathsHistory.get.length - 1];
+            const historyTargets: AlteredPaths[] = pathsHistory.get[historyIndex.get];
+            //const historyTargets: AlteredPaths[] = changeType === 'undo' ? pathsHistory.get[historyIndex.get] : pathsHistory.get[pathsHistory.get.length - 1];
 
             // Test whether the paths array has changed
             // This is used to determine if the pathsHistory array should be set
@@ -182,29 +184,35 @@ const useHistoryChange = () => {
         // If the paths array has not been changed, end the function and don't set the pathsHistory array
         if (!pathsChanged) return;
 
-        pathsHistory.set(oldHistory => {
-            const newHistory = clone(oldHistory);
+        // Move the history index forward or backward depending on if it's an undo or redo
+        const newIndex = changeType === 'undo' ? historyIndex.get - 1 : historyIndex.get + 1;
+        if (pathsHistory.get[newIndex]) {
+            historyIndex.set(newIndex);
+        }
 
-            switch (changeType) {
-                case 'undo':
-                    // Move the first item of the pathsHistory array to the end
-                    newHistory.splice(newHistory.length - 1, 0, newHistory.splice(0, 1)[0]);
-                    break;
-                case 'redo':
-                    // Move the last item of the pathsHistory array to the beginning
-                    newHistory.splice(0, 0, newHistory.splice(newHistory.length - 1, 1)[0]);
-                    break;
-            }
+        // pathsHistory.set(oldHistory => {
+        //     const newHistory = clone(oldHistory);
 
-            // Used for debugging
-            // console.log(newHistory.map(altered => {
-            //     return altered.map(paths => {
-            //         return {newPathId: paths.newPath.id, oldPathsId: paths.oldPath.id, alteredType: paths.alteredType}
-            //     })
-            // }));
+        //     switch (changeType) {
+        //         case 'undo':
+        //             // Move the first item of the pathsHistory array to the end
+        //             newHistory.splice(newHistory.length - 1, 0, newHistory.splice(0, 1)[0]);
+        //             break;
+        //         case 'redo':
+        //             // Move the last item of the pathsHistory array to the beginning
+        //             newHistory.splice(0, 0, newHistory.splice(newHistory.length - 1, 1)[0]);
+        //             break;
+        //     }
 
-            return newHistory;
-        });
+        //     // Used for debugging
+        //     // console.log(newHistory.map(altered => {
+        //     //     return altered.map(paths => {
+        //     //         return {newPathId: paths.newPath.id, oldPathsId: paths.oldPath.id, alteredType: paths.alteredType}
+        //     //     })
+        //     // }));
+
+        //     return newHistory;
+        // });
     } 
 
     return { findAlteredPaths, alterPathsHistoryAfterRelease, adjustPathsHistoryAfterPress, handleHistoryChange }
