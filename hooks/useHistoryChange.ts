@@ -52,6 +52,7 @@ const useHistoryChange = () => {
         // Used for debugging
         //console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
 
+        // hello world
         return alteredPaths;
     }
 
