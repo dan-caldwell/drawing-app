@@ -1,5 +1,6 @@
 import React, { createContext } from "react";
 import { AlteredPaths, AutoJoin, OpenSubmenu, SvgPath } from '@types';
+import { ModalId } from 'drawing-app/components/tools/ModalArea';
 import useContextState from 'drawing-app/hooks/useContextState';
 
 type ContextState<T> = {
@@ -11,6 +12,7 @@ interface ContextProps {
     paths: ContextState<SvgPath[]>,
     activeTool: ContextState<string | null>,
     openSubmenu: ContextState<OpenSubmenu>,
+    openModal: ContextState<ModalId | null>
     autoJoin: ContextState<AutoJoin>,
     strokeWidth: ContextState<number>,
     strokeColor: ContextState<string>,
@@ -62,6 +64,7 @@ const DrawingProvider: React.FC = ({children}) => {
         target: null,
         reRendering: false
     });
+    const openModal = useContextState<ModalId | null>(null);
     const activeDrawTool = useContextState<string | null>('brush');
     const autoJoin = useContextState<AutoJoin>({
         disabled: false,
@@ -73,7 +76,7 @@ const DrawingProvider: React.FC = ({children}) => {
     const selectedPath = useContextState<SvgPath | null>(null);
     const debugPoints = useContextState<string[]>([]);
     const pathsHistory = useContextState<AlteredPaths[][]>([] as AlteredPaths[][]);
-    const historyIndex = useContextState<number>(0);
+    const historyIndex = useContextState<number>(-1);
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({
@@ -93,6 +96,7 @@ const DrawingProvider: React.FC = ({children}) => {
             paths,
             activeTool,
             openSubmenu,
+            openModal,
             resetOpenSubmenu,
             autoJoin,
             strokeWidth,

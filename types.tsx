@@ -79,3 +79,4 @@ export type AlteredPaths = {
   newPath: SvgPath,
   alteredType: 'added' | 'removed' | 'altered'
 }
+

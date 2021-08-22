@@ -7,6 +7,7 @@ import Gestures from './components/drawing/Gestures';
 import { MemoizedDrawingCanvas } from './components/drawing/DrawingCanvas';
 import DrawingProvider from './components/context/DrawingContext';
 import DocumentNavbar from './navigation/DocumentNavbar';
+import ModalArea from './components/tools/ModalArea';
 
 // import useCachedResources from './hooks/useCachedResources';
 // import useColorScheme from './hooks/useColorScheme';
@@ -18,6 +19,7 @@ export default function App() {
 			<SafeAreaView style={[styles.safeArea, {flex: 0, borderBottomColor: '#ddd', borderBottomWidth: 1}]} />
 			<SafeAreaView style={[styles.safeArea, {flex: 1}]}>
 				<DrawingProvider>
+					<ModalArea />
 					<View style={styles.canvas}>
 						<DocumentNavbar />
 						<Gestures>

@@ -52,7 +52,7 @@ const useHistoryChange = () => {
         // Used for debugging
         //console.log({addedPaths: addedPaths.length, removedPaths: removedPaths.length, alteredPaths: alternatePathsNum});
 
-        // hello world
+        // hello world!
         return alteredPaths;
     }
 
@@ -60,15 +60,18 @@ const useHistoryChange = () => {
     const alterPathsHistoryAfterRelease = (startPaths: SvgPath[], currentPaths: SvgPath[] = paths.get) => {
         if (!startPaths) return;
         const alteredPaths = findAlteredPaths(currentPaths || paths.get, startPaths);
+        if (alteredPaths.length === 0) return;
+        const newIndex = historyIndex.get + 1;
         pathsHistory.set(oldHistory => {
             const newHistory = clone(oldHistory);
             // Add the altered paths to the pathsHistory array
-            newHistory.splice(historyIndex.get + 1, 0, alteredPaths);
+            newHistory.splice(newIndex, 0, alteredPaths);
 
-            // Return the last 20 changes
-            return newHistory.slice(-20);
+            // Return the last 50 changes
+            return newHistory.slice(-50);
         });
-        historyIndex.set(historyIndex.get + 1);
+        // Set the new history index
+        historyIndex.set(newIndex);
     }
 
     // Remove a path from newPaths
@@ -114,7 +117,7 @@ const useHistoryChange = () => {
         paths.set(oldPaths => {
             const newPaths = clone(oldPaths);
             const historyTargets: AlteredPaths[] = pathsHistory.get[historyIndex.get];
-            //const historyTargets: AlteredPaths[] = changeType === 'undo' ? pathsHistory.get[historyIndex.get] : pathsHistory.get[pathsHistory.get.length - 1];
+            if (!historyTargets) return oldPaths;
 
             // Test whether the paths array has changed
             // This is used to determine if the pathsHistory array should be set
@@ -187,33 +190,10 @@ const useHistoryChange = () => {
 
         // Move the history index forward or backward depending on if it's an undo or redo
         const newIndex = changeType === 'undo' ? historyIndex.get - 1 : historyIndex.get + 1;
+        // A new history index will only be set if the object actually exists on pathsHistory
         if (pathsHistory.get[newIndex]) {
             historyIndex.set(newIndex);
         }
-
-        // pathsHistory.set(oldHistory => {
-        //     const newHistory = clone(oldHistory);
-
-        //     switch (changeType) {
-        //         case 'undo':
-        //             // Move the first item of the pathsHistory array to the end
-        //             newHistory.splice(newHistory.length - 1, 0, newHistory.splice(0, 1)[0]);
-        //             break;
-        //         case 'redo':
-        //             // Move the last item of the pathsHistory array to the beginning
-        //             newHistory.splice(0, 0, newHistory.splice(newHistory.length - 1, 1)[0]);
-        //             break;
-        //     }
-
-        //     // Used for debugging
-        //     // console.log(newHistory.map(altered => {
-        //     //     return altered.map(paths => {
-        //     //         return {newPathId: paths.newPath.id, oldPathsId: paths.oldPath.id, alteredType: paths.alteredType}
-        //     //     })
-        //     // }));
-
-        //     return newHistory;
-        // });
     } 
 
     return { findAlteredPaths, alterPathsHistoryAfterRelease, adjustPathsHistoryAfterPress, handleHistoryChange }

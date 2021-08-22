@@ -6,7 +6,7 @@ import ToolNavMenu from './nav-menus/ToolNavMenu';
 import DrawingSettingsNavMenu from './nav-menus/DrawingSettingsNavMenu';
 
 const ToolNavbar: React.FC = () => {
-    const { paths, resetOpenSubmenu, openSubmenu, activeTool, tools } = useContext(DrawingContext);
+    const { resetOpenSubmenu, openSubmenu, activeTool, tools } = useContext(DrawingContext);
 
     const handlePress = (e: GestureResponderEvent) => {
         if (openSubmenu.get.open) resetOpenSubmenu();

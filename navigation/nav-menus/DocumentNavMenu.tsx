@@ -7,7 +7,7 @@ import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 
 const DocumentNavMenu: React.FC = () => {
     const submenuRef = useRef<View>(null);
-    const { tools, paths, selectedPath, pathsHistory } = useContext(DrawingContext);
+    const { tools, paths, selectedPath, pathsHistory, historyIndex, openModal } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu } = useNavMenu(submenuRef);
 
     const handleSubmenuPress = () => {
@@ -18,11 +18,18 @@ const DocumentNavMenu: React.FC = () => {
         paths.set([]);
         selectedPath.set(null);
         pathsHistory.set([]);
+        historyIndex.set(-1);
     }
 
     return (
         <>
             <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === tools.document}>
+                <ToolButton
+                    text="Open Modal"
+                    onPress={() => openModal.set('CanvasAreaModal')}
+                    icon={tools.move}
+                    style={styles.submenuButton}
+                />
                 <ToolButton 
                     text="Reset Canvas"
                     onPress={handleResetDrawingCanvas}
