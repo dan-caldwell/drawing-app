@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { windowWidth, windowHeight } from 'drawing-app/constants/Layout';
 
 interface Props {
     children: JSX.Element | JSX.Element[],
@@ -26,7 +25,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'orange',
         zIndex: 10,
-        top: 100,
-        left: 100
+        width: 200,
     }
 });

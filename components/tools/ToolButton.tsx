@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { TouchableOpacity, StyleSheet, Text, View, LayoutChangeEvent, GestureResponderEvent } from "react-native";
 import { Measurement } from '@types';
 import { measureComponent } from 'drawing-app/utils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ICON_MARGIN } from 'drawing-app/constants/Layout';
+import { DrawingContext } from '../context/DrawingContext';
 
 interface Props {
     text?: string,
@@ -15,11 +16,13 @@ interface Props {
     icon?: any,
     openSubmenuOnPress?: boolean
     styleType?: 'light' | 'normal' | 'dark',
-    submenuPosition?: 'above' | 'below' | 'left' | 'right'
+    submenuPosition?: 'above' | 'below' | 'left' | 'right',
+    clearSubmenuOnPress?: boolean
 }
 
-const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress, openSubmenuOnPress = false, styleType = 'normal', submenuPosition = 'above'}) => {
+const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLongPress, openSubmenuOnPress = false, styleType = 'normal', submenuPosition = 'above', clearSubmenuOnPress = false}) => {
     const buttonRef = useRef<View>(null);
+    const { resetOpenSubmenu } = useContext(DrawingContext);
 
     const handleLongPress = async (e: GestureResponderEvent) => {
         if (!buttonRef.current) return;
@@ -34,6 +37,7 @@ const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLong
             if (!buttonRef.current) return;
             const measurement = await measureComponent(buttonRef.current);
             onPress(e, measurement, icon, submenuPosition);
+            if (clearSubmenuOnPress) resetOpenSubmenu();
             return;
         }
         const measurement = {
@@ -45,6 +49,7 @@ const ToolButton: React.FC<Props> = ({text, onPress, active, style, icon, onLong
             y: 0
         }
         onPress(e, measurement, '', submenuPosition);
+        if (clearSubmenuOnPress) resetOpenSubmenu();
     }
 
     // Set the style type use

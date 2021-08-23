@@ -29,12 +29,14 @@ const DocumentNavMenu: React.FC = () => {
                     onPress={() => openModal.set('CanvasAreaModal')}
                     icon={tools.move}
                     style={styles.submenuButton}
+                    clearSubmenuOnPress={true}
                 />
                 <ToolButton 
                     text="Reset Canvas"
                     onPress={handleResetDrawingCanvas}
                     icon={tools.reset}
                     style={styles.lastSubmenuButton}
+                    clearSubmenuOnPress={true}
                 />
             </TooltipSubmenu>
             <ToolButton 

@@ -37,7 +37,9 @@ export default function App() {
 
 const styles = StyleSheet.create({
 	safeArea: {
-		backgroundColor: '#fff'
+		backgroundColor: '#fff',
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
 	container: {
         flex: 1,
