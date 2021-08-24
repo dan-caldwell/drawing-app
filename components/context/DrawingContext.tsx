@@ -1,7 +1,8 @@
 import React, { createContext } from "react";
-import { AlteredPaths, AutoJoin, OpenSubmenu, SvgPath } from '@types';
+import { AlteredPaths, AutoJoin, CanvasSize, OpenSubmenu, SvgPath } from '@types';
 import { ModalId } from 'drawing-app/components/tools/ModalArea';
 import useContextState from 'drawing-app/hooks/useContextState';
+import { windowHeight, windowWidth } from "drawing-app/constants/Layout";
 
 type ContextState<T> = {
     get: T,
@@ -35,7 +36,8 @@ interface ContextProps {
     },
     debugPoints: ContextState<string[]>,
     pathsHistory: ContextState<AlteredPaths[][]>,
-    historyIndex: ContextState<number>
+    historyIndex: ContextState<number>,
+    canvasSize: ContextState<CanvasSize>
 }
 
 const tools = {
@@ -77,6 +79,10 @@ const DrawingProvider: React.FC = ({children}) => {
     const debugPoints = useContextState<string[]>([]);
     const pathsHistory = useContextState<AlteredPaths[][]>([] as AlteredPaths[][]);
     const historyIndex = useContextState<number>(-1);
+    const canvasSize = useContextState<CanvasSize>({
+        width: windowWidth / 2,
+        height: windowHeight / 2
+    });
 
     const resetOpenSubmenu = () => {
         openSubmenu.set({
@@ -107,7 +113,8 @@ const DrawingProvider: React.FC = ({children}) => {
             tools,
             debugPoints,
             pathsHistory,
-            historyIndex
+            historyIndex,
+            canvasSize
         }}>
             {children}
         </DrawingContext.Provider>

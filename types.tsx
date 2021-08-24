@@ -80,3 +80,7 @@ export type AlteredPaths = {
   alteredType: 'added' | 'removed' | 'altered'
 }
 
+export type CanvasSize = {
+  width: number,
+  height: number
+}

@@ -10,10 +10,6 @@ const DocumentNavMenu: React.FC = () => {
     const { tools, paths, selectedPath, pathsHistory, historyIndex, openModal } = useContext(DrawingContext);
     const { handleNavButtonPress, styles, openSubmenu } = useNavMenu(submenuRef);
 
-    const handleSubmenuPress = () => {
-        console.log('submenu press')
-    }
-
     const handleResetDrawingCanvas = () => {
         paths.set([]);
         selectedPath.set(null);
@@ -25,8 +21,8 @@ const DocumentNavMenu: React.FC = () => {
         <>
             <TooltipSubmenu ref={submenuRef} open={openSubmenu.get.open && openSubmenu.get.target === tools.document}>
                 <ToolButton
-                    text="Open Modal"
-                    onPress={() => openModal.set('CanvasAreaModal')}
+                    text="Canvas Settings"
+                    onPress={() => openModal.set('CanvasSettings')}
                     icon={tools.move}
                     style={styles.submenuButton}
                     clearSubmenuOnPress={true}

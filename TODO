@@ -38,6 +38,7 @@
     [√] Instead of moving the undo/redo items in the array, is it better to have a current index to navigate through array
     [ ] Select undo/redo path target after undo/redo (currently, if there's a selected path it will outline the path, giving the impression this works, but it doesn't)
 [ ] Modal
+[ ] Fix panning boundaries + document navbar area makes it so you can't pan if you press on the canvas on top of it
 [ ] Document settings nav menu
     [√] Submenu open from below
     [ ] Change canvas size

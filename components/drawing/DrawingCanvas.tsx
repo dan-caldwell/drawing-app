@@ -5,7 +5,7 @@ import { DrawingContext } from '../context/DrawingContext';
 import clone from 'clone';
 import useBrushTool from 'drawing-app/hooks/useBrushTool';
 import useLineTool from 'drawing-app/hooks/useLineTool';
-import { AlteredPaths, CanvasPoint, SvgPath } from 'drawing-app/types';
+import { CanvasPoint, SvgPath } from 'drawing-app/types';
 import useSelection from 'drawing-app/hooks/useSelection';
 import useEraser from 'drawing-app/hooks/useEraser';
 import useHistoryChange from 'drawing-app/hooks/useHistoryChange';
@@ -14,7 +14,7 @@ import { v4 as uuid } from 'uuid';
 import debugMode from 'drawing-app/constants/debugMode';
 
 const DrawingCanvas: React.FC = () => {
-    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints, pathsHistory } = useContext(DrawingContext);
+    const { paths, activeTool, openSubmenu, strokeWidth, strokeColor, fill, selectedPath, tools, resetOpenSubmenu, debugPoints, canvasSize } = useContext(DrawingContext);
     const { brushResponderMove } = useBrushTool();
     const { lineResponderMove, determineIfLineContinuation } = useLineTool();
     const { setCurrentPathBoundaries, updateSelectionTranslateAfterRelease, updateSelectionRotateAfterRelease, rotateSelection, translateSelection, selectedOutside } = useSelection();
@@ -229,7 +229,10 @@ const DrawingCanvas: React.FC = () => {
             onResponderGrant={handleResponderGrant}
             onResponderMove={handleResponderMove}
             onResponderRelease={handleResponderRelease}
-            style={styles.container}
+            style={[styles.container, {
+                width: canvasSize.get.width,
+                height: canvasSize.get.height
+            }]}
         >
             <Svg style={styles.svg}>
                 {(debugMode && debugPoints.get.length > 0) &&

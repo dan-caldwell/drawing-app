@@ -14,7 +14,7 @@ interface Offset {
 }
 
 const Gestures: React.FC<Props> = ({ children }) => {
-    const { activeTool, tools } = useContext(DrawingContext);
+    const { activeTool, tools, canvasSize } = useContext(DrawingContext);
     const translationXRef = useRef(new Animated.Value(0));
     const translationYRef = useRef(new Animated.Value(0));
     const lastOffset = useRef<Offset>({x: 0, y: 0});
@@ -60,10 +60,11 @@ const Gestures: React.FC<Props> = ({ children }) => {
         }
     }
 
-    const translateInterpolate = (orientationValue: number, ref: React.MutableRefObject<Animated.Value>) => {
+    const translateInterpolate = (orientationValue: number, ref: React.MutableRefObject<Animated.Value>, axis: 'x' | 'y') => {
+        const canvasValue = axis === 'x' ? canvasSize.get.width : canvasSize.get.height;
         return ref.current.interpolate({
-            inputRange: [-orientationValue / 2, orientationValue / 2],
-            outputRange: [-orientationValue / 2, orientationValue / 2],
+            inputRange: [0, orientationValue - canvasValue],
+            outputRange: [0, orientationValue - canvasValue],
             extrapolate: 'clamp'
         });
     }
@@ -74,9 +75,11 @@ const Gestures: React.FC<Props> = ({ children }) => {
             <Animated.View
                 style={{
                     transform: [
-                        { translateX: translateInterpolate(windowWidth, translationXRef) },
-                        { translateY: translateInterpolate(windowHeight, translationYRef) }
-                    ]
+                        { translateX: translateInterpolate(windowWidth, translationXRef, 'x') },
+                        { translateY: translateInterpolate(windowHeight, translationYRef, 'y') }
+                    ],
+                    borderColor: 'red',
+                    borderWidth: 1,
                 }}
             >
                 <PinchGestureHandler enabled={activeTool.get === tools.move} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
