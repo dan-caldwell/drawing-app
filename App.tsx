@@ -49,5 +49,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: '#ddd',
 		overflow: 'hidden',
+		position: 'relative'
 	}
 });

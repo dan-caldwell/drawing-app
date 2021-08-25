@@ -12,7 +12,7 @@ const DocumentNavbar: React.FC = () => {
     const { deletePath } = useSelection();
 
     return (
-        <TouchableWithoutFeedback>
+        <TouchableWithoutFeedback style={styles.wrapper}>
             <View style={styles.container}>
                 {selectedPath.get &&
                     <ToolButton
@@ -42,11 +42,13 @@ const DocumentNavbar: React.FC = () => {
 export default DocumentNavbar;
 
 const styles = StyleSheet.create({
+    wrapper: {
+        position: 'absolute',
+    },
     container: {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        position: 'relative',
         zIndex: 100,
         paddingRight: 5
     }

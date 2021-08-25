@@ -60,11 +60,19 @@ const Gestures: React.FC<Props> = ({ children }) => {
         }
     }
 
+
+    // When panning, this interpolation function will prevent the user from panning too far out of the view
+    // AKA it creates a bounding box for where the translation can go
+
+    // Issue:
+    // On canvas resize, the transform interpolation seems to not work ??
     const translateInterpolate = (orientationValue: number, ref: React.MutableRefObject<Animated.Value>, axis: 'x' | 'y') => {
         const canvasValue = axis === 'x' ? canvasSize.get.width : canvasSize.get.height;
+        //const currentScale = Number(JSON.stringify(scale.current));
+
         return ref.current.interpolate({
-            inputRange: [0, orientationValue - canvasValue],
-            outputRange: [0, orientationValue - canvasValue],
+            inputRange: [-canvasValue / 2, canvasValue + (canvasValue / 2)],
+            outputRange: [-canvasValue / 2, canvasValue + (canvasValue / 2)],
             extrapolate: 'clamp'
         });
     }
@@ -79,7 +87,8 @@ const Gestures: React.FC<Props> = ({ children }) => {
                         { translateY: translateInterpolate(windowHeight, translationYRef, 'y') }
                     ],
                     borderColor: 'red',
-                    borderWidth: 1,
+                    borderWidth: 2,
+                    position: 'absolute'
                 }}
             >
                 <PinchGestureHandler enabled={activeTool.get === tools.move} onGestureEvent={handlePinchGestureEvet} onHandlerStateChange={handlePinchHandlerStateChange}>
@@ -91,7 +100,9 @@ const Gestures: React.FC<Props> = ({ children }) => {
                                     outputRange: [0.5, 3],
                                     extrapolate: 'clamp'
                                 })}
-                            ]
+                            ],
+                            borderColor: 'blue',
+                            borderWidth: 2,
                         }}
                     >
                         {children}

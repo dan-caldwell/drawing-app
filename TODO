@@ -42,5 +42,6 @@
 [ ] Document settings nav menu
     [√] Submenu open from below
     [ ] Change canvas size
+        [ ] Canvas size width/height limit
     [ ] Save project
     [ ] Save canvas image as JPG/PNG
