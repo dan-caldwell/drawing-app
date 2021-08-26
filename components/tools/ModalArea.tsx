@@ -1,40 +1,24 @@
 import React, { useContext } from 'react';
-import { View, Text, Modal, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Modal, StyleSheet } from 'react-native';
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 import { TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import Input from '../utility-components/Input';
 import { ICON_MARGIN } from 'drawing-app/constants/Layout';
+import CanvasSettings from '../modals/CanvasSettings';
 
 // Keep the ModalId type in this file since this is where all the modals are defined
 export type ModalId = 'CanvasSettings';
 
 const ModalArea: React.FC = () => {
-    const { openModal, canvasSize } = useContext(DrawingContext);
+    const { openModal } = useContext(DrawingContext);
 
     // Contains all of the modals
     const modals = {
-        CanvasSettings: (
-            <View>
-                <Text>Canvas Size</Text>
-                <View style={styles.row}>
-                    <Text>Width </Text><Input keyboardType="numeric" value={canvasSize.get.width.toString()} onChangeText={(value: string) => canvasSize.set({
-                        width: Number(value),
-                        height: Number(canvasSize.get.height)
-                    })} />
-                </View>
-                <View style={styles.row}>
-                    <Text>Height </Text><Input keyboardType="numeric" value={canvasSize.get.height.toString()} onChangeText={(value: string) => canvasSize.set({
-                        width: Number(canvasSize.get.width),
-                        height: Number(value),
-                    })} />
-                </View>
-            </View>
-        ),
+        CanvasSettings,
     }
 
     // Set the active modal
     // If no modal, set it to the empty modal
-    const activeModal = openModal.get ? modals[openModal.get] : "";
+    const activeModal = openModal.get ? modals[openModal.get] : () => "";
 
     return (
         <Modal 
@@ -44,7 +28,7 @@ const ModalArea: React.FC = () => {
         >
             <TouchableWithoutFeedback onPress={() => openModal.set(null)} style={styles.centeredView}>
                 <TouchableWithoutFeedback style={styles.modalView} onPress={() => {}}>
-                    {activeModal}
+                    {activeModal()}
                     <TouchableOpacity
                         style={[styles.button, styles.buttonClose]}
                         onPress={() => openModal.set(null)}
@@ -90,8 +74,4 @@ const styles = StyleSheet.create({
     buttonClose: {
         backgroundColor: 'orange'
     },
-    row: {
-        flexDirection: "row",
-        alignItems: "center"
-    }
 });

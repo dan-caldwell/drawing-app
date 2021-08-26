@@ -68,15 +68,13 @@ const Gestures: React.FC<Props> = ({ children }) => {
     // On canvas resize, the transform interpolation seems to not work ??
     const translateInterpolate = (orientationValue: number, ref: React.MutableRefObject<Animated.Value>, axis: 'x' | 'y') => {
         const canvasValue = axis === 'x' ? canvasSize.get.width : canvasSize.get.height;
-        //const currentScale = Number(JSON.stringify(scale.current));
 
         return ref.current.interpolate({
-            inputRange: [-canvasValue / 2, canvasValue + (canvasValue / 2)],
-            outputRange: [-canvasValue / 2, canvasValue + (canvasValue / 2)],
+            inputRange: [-canvasValue / 2, orientationValue - (canvasValue / 2)],
+            outputRange: [-canvasValue / 2, orientationValue - (canvasValue / 2)],
             extrapolate: 'clamp'
         });
     }
-
 
     return (
         <PanGestureHandler enabled={activeTool.get === tools.move} onGestureEvent={handlePanGestureEvent} onHandlerStateChange={handlePanHandlerStateChange}>
