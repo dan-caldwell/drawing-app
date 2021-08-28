@@ -13,7 +13,7 @@ const ModalArea: React.FC = () => {
 
     // Contains all of the modals
     const modals = {
-        CanvasSettings,
+        CanvasSettings: <CanvasSettings />,
     }
 
     // Set the active modal
@@ -28,7 +28,7 @@ const ModalArea: React.FC = () => {
         >
             <TouchableWithoutFeedback onPress={() => openModal.set(null)} style={styles.centeredView}>
                 <TouchableWithoutFeedback style={styles.modalView} onPress={() => {}}>
-                    {activeModal()}
+                    {activeModal}
                     <TouchableOpacity
                         style={[styles.button, styles.buttonClose]}
                         onPress={() => openModal.set(null)}

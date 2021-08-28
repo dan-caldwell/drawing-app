@@ -1,9 +1,10 @@
 import React, { useContext, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Input from "drawing-app/components/utility-components/Input";
 import { DrawingContext } from 'drawing-app/components/context/DrawingContext';
 import Row from "../utility-components/Row";
 import { CanvasSize } from "@types";
+import Button from '../utility-components/Button';
 
 const CanvasSettings = () => {
     const { canvasSize } = useContext(DrawingContext);
@@ -11,6 +12,14 @@ const CanvasSettings = () => {
         width: Number(canvasSize.get.width),
         height: Number(canvasSize.get.height)
     });
+
+    const handleSave = () => {
+        console.log('saving...');
+        canvasSize.set({
+            width: canvasNewSize.width,
+            height: canvasNewSize.height
+        })
+    }
 
     return (
         <View>
@@ -28,10 +37,7 @@ const CanvasSettings = () => {
                 })} />
             </Row>
             <Row>
-                <Text onPress={() => canvasSize.set({
-                    width: canvasNewSize.width,
-                    height: canvasNewSize.height
-                })}>Save</Text>
+                <Button title="Save" onPress={handleSave} />
             </Row>
         </View>
     )
